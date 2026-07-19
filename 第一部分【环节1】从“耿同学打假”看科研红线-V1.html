@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth snap-y snap-mandatory">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从“耿同学打假”看科研红线 - 沉浸式专题教学</title>
+    <!-- 加载 Tailwind CSS 与 Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 加载精美学术与现代无衬线字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* 侧边高精度毛玻璃幻灯片指示器 */
+        .progress-nav {
+            position: fixed;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 2.2rem 0.9rem;
+            border-radius: 9999px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s ease;
+        }
+
+        .progress-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            transform: scale(2.2);
+            background-color: #6366f1 !important;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.8);
+        }
+
+        .progress-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            left: 3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #f1f5f9;
+            opacity: 0;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 0.9rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .progress-dot:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(5px);
+        }
+
+        /* 全局幻灯片单页窗口容器 */
+        .slide-section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 平滑显现动效 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 极客感物理鱼骨流向图 - 为更大文字预留足够垂直空间 */
+        .fishbone-line {
+            position: relative;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #10b981, #f43f5e, #f59e0b);
+            width: 100%;
+            margin: 15rem 0; /* 预留上下安全距离防止大标题相互重叠 */
+        }
+
+        .fishbone-item {
+            position: absolute;
+            width: 320px; /* 适当拓宽以优雅换行并承载更大的正文 */
+        }
+
+        .fishbone-item.up {
+            bottom: 50px;
+            transform: translateX(-50%);
+        }
+
+        .fishbone-item.down {
+            top: 50px;
+            transform: translateX(-50%);
+        }
+
+        .fishbone-connector {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.8), rgba(99, 102, 241, 0));
+            left: 50%;
+            height: 50px;
+        }
+
+        .fishbone-item.up .fishbone-connector {
+            bottom: -50px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3));
+        }
+
+        .fishbone-item.down .fishbone-connector {
+            top: -50px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+        }
+
+        /* 脉冲节点点缀 */
+        .fishbone-node {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #6366f1;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            border: 3px solid #090d16;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        .fishbone-item.up .fishbone-node {
+            bottom: -58px;
+        }
+        .fishbone-item.down .fishbone-node {
+            top: -58px;
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-500 selection:text-white">
+
+    <!-- 左侧高精度 H5 幻灯片导航 -->
+    <nav class="progress-nav hidden lg:flex">
+        <div class="progress-dot active" data-target="h1" data-label="01 科研红线案例"></div>
+        <div class="progress-dot" data-target="h2" data-label="02 学术打假四阶段"></div>
+    </nav>
+
+    <!-- 💡 环节一：从“耿同学打假”看科研红线 -->
+    <section id="h1" class="slide-section flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 md:p-12">
+        <!-- 背景流光装饰 -->
+        <div class="absolute inset-0 opacity-15 pointer-events-none">
+            <div class="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] bg-indigo-500 rounded-full blur-[150px]"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-emerald-500 rounded-full blur-[130px]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto w-full h-full flex flex-col justify-between relative z-10 py-8 md:py-12">
+            <!-- 幻灯片头部 -->
+            <div class="reveal">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-bold text-xs tracking-wider uppercase mb-3">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i> 01
+                </span>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-slate-100 tracking-tighter leading-none">
+                    从“耿同学打假”<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">看科研绝对红线</span>
+                </h1>
+            </div>
+
+            <!-- 核心：左右对称布局 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center flex-grow my-6 overflow-hidden">
+                <!-- 左侧：视觉海报图 -->
+                <div class="lg:col-span-5 h-full max-h-[260px] lg:max-h-[480px] bg-slate-900/60 rounded-[2.5rem] p-6 border border-white/10 shadow-2xl relative overflow-hidden group flex flex-col justify-between">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent z-10"></div>
+                    <img 
+                        src="image/eb765cb269c3878c8c8d0c74fd5999f2.jpg"
+                        alt="科研数据检验" 
+                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        onerror="if(!this.dataset.fallback){this.dataset.fallback=1; this.src='https://i.imgs.ovh/2026/07/18/99a42213eae23a2e151151491a86f6cc.jpg';}else if(this.dataset.fallback=='1'){this.dataset.fallback=2; this.src='image/geng_tongxue.jpg';}else if(this.dataset.fallback=='2'){this.dataset.fallback=3; this.src='https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=1200&q=80';}"
+                    />
+                    <div class="relative z-20">
+                        <span class="bg-indigo-600 text-white font-extrabold text-2xs tracking-widest uppercase px-3 py-1 rounded-md">CASE FOCUS</span>
+                    </div>
+                    <div class="relative z-20 bg-slate-950/80 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                        <h3 class="text-xl font-black text-white mb-1.5">耿同学 · 风暴眼之中的坚守</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            以客观纯粹的技术手段剖析顶刊瑕疵，重塑数字化时代的学术诚信标准。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：耿同学4个核心头衔，分4行，超大字体 -->
+                <div class="lg:col-span-7 flex flex-col justify-center gap-4 lg:gap-6">
+                    <!-- 头衔 1 -->
+                    <div class="group border-b border-white/5 pb-3 md:pb-4 transition-all duration-300 hover:border-indigo-500/40 flex items-baseline gap-4 md:gap-6">
+                        <span class="text-indigo-500 font-black text-lg md:text-2xl font-mono">01</span>
+                        <div>
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-black text-slate-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-cyan-400 transition-all duration-300">
+                                北航肄业生物医学工程博士
+                            </h2>
+                            <p class="text-xs md:text-sm text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">专业功底造就敏锐学术视角，退场经历引发多维社会反思</p>
+                        </div>
+                    </div>
+                    <!-- 头衔 2 -->
+                    <div class="group border-b border-white/5 pb-3 md:pb-4 transition-all duration-300 hover:border-indigo-500/40 flex items-baseline gap-4 md:gap-6">
+                        <span class="text-indigo-500 font-black text-lg md:text-2xl font-mono">02</span>
+                        <div>
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-black text-slate-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-cyan-400 transition-all duration-300">
+                                顶刊数据核验技术博主
+                            </h2>
+                            <p class="text-xs md:text-sm text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">运用像素穿透技术，实现学术检验在公众层面的数字化和透明化</p>
+                        </div>
+                    </div>
+                    <!-- 头衔 3 -->
+                    <div class="group border-b border-white/5 pb-3 md:pb-4 transition-all duration-300 hover:border-indigo-500/40 flex items-baseline gap-4 md:gap-6">
+                        <span class="text-indigo-500 font-black text-lg md:text-2xl font-mono">03</span>
+                        <div>
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-black text-slate-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-cyan-400 transition-all duration-300">
+                                《Science》封面人物
+                            </h2>
+                            <p class="text-xs md:text-sm text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">国际殿堂级期刊硬核背书，彰显学术核验深度与全球影响力</p>
+                        </div>
+                    </div>
+                    <!-- 头衔 4 -->
+                    <div class="group border-b border-white/5 pb-3 md:pb-4 transition-all duration-300 hover:border-indigo-500/40 flex items-baseline gap-4 md:gap-6">
+                        <span class="text-indigo-500 font-black text-lg md:text-2xl font-mono">04</span>
+                        <div>
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-black text-slate-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-cyan-400 transition-all duration-300">
+                                学术不端民间吹哨人
+                            </h2>
+                            <p class="text-xs md:text-sm text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">冲破常规高校自查阻力，重塑常态化、低成本社会舆论监督生态</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页脚 -->
+            <div class="text-center text-xs text-slate-500 font-bold tracking-widest border-t border-white/5 pt-4">
+                点击侧边点或使用鼠标滚轮切换页面
+            </div>
+        </div>
+    </section>
+
+    <!-- 💡 环节二：学术打假四阶段梳理 -->
+    <section id="h2" class="slide-section flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 md:p-12">
+        <div class="max-w-7xl mx-auto w-full h-full flex flex-col justify-between relative z-10 py-8 md:py-12">
+            <!-- 幻灯片头部 -->
+            <div class="reveal">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs tracking-wider uppercase mb-3">
+                    <i data-lucide="git-branch" class="w-4 h-4"></i> 02
+                </span>
+                <h2 class="text-4xl md:text-6xl lg:text-7xl font-black text-slate-100 tracking-tighter leading-none">
+                    学术打假<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">四个演化阶段</span>
+                </h2>
+            </div>
+
+            <!-- 核心：大屏展示高精度横向鱼骨图，小屏优雅自适应竖版 -->
+            <div class="my-auto w-full overflow-visible">
+                <!-- 🖥️ 桌面端物理鱼骨图 (lg:block) - 各阶段标题采用 H3 标签，文本大幅放大 -->
+                <div class="fishbone-line hidden lg:block">
+                    <!-- 阶段 1：上 -->
+                    <div class="fishbone-item up" style="left: 12.5%;">
+                        <div class="bg-slate-900/80 backdrop-blur-md p-8 rounded-[2rem] border-2 border-indigo-500/30 hover:border-indigo-500 transition-all shadow-2xl">
+                            <span class="px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-xs block w-max mb-3">2026.4.8 起</span>
+                            <h3 class="text-xl lg:text-2xl font-black text-slate-100 mb-3 flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-5 h-5 text-indigo-400"></i>
+                                1. 出圈成名阶段
+                            </h3>
+                            <p class="text-sm lg:text-base text-slate-300 leading-relaxed font-bold">
+                                视频举证同济王平Nature主刊数据编造。随后校方查实学术不端并免职降级。
+                            </p>
+                        </div>
+                        <div class="fishbone-connector"></div>
+                        <div class="fishbone-node" style="background-color: #6366f1;"></div>
+                    </div>
+
+                    <!-- 阶段 2：下 -->
+                    <div class="fishbone-item down" style="left: 37.5%;">
+                        <div class="fishbone-connector"></div>
+                        <div class="fishbone-node" style="background-color: #10b981;"></div>
+                        <div class="bg-slate-900/80 backdrop-blur-md p-8 rounded-[2rem] border-2 border-emerald-500/30 hover:border-emerald-500 transition-all shadow-2xl">
+                            <span class="px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs block w-max mb-3">2026.4.25 - 5.12</span>
+                            <h3 class="text-xl lg:text-2xl font-black text-slate-100 mb-3 flex items-center gap-2">
+                                <i data-lucide="flame" class="w-5 h-5 text-emerald-400"></i>
+                                2. 连环打假阶段
+                            </h3>
+                            <p class="text-sm lg:text-base text-slate-300 leading-relaxed font-bold">
+                                连续 36 天集中举报陈佺、康铁邦、邝栋明、苏佳灿 4 位杰青，处罚陆续通报。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 阶段 3：上 -->
+                    <div class="fishbone-item up" style="left: 62.5%;">
+                        <div class="bg-slate-900/80 backdrop-blur-md p-8 rounded-[2rem] border-2 border-rose-500/30 hover:border-rose-500 transition-all shadow-2xl">
+                            <span class="px-3 py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs block w-max mb-3">2026.6.16</span>
+                            <h3 class="text-xl lg:text-2xl font-black text-slate-100 mb-3 flex items-center gap-2">
+                                <i data-lucide="locate" class="w-5 h-5 text-rose-400"></i>
+                                3. 溯源母校阶段
+                            </h3>
+                            <p class="text-sm lg:text-base text-slate-300 leading-relaxed font-bold">
+                                实名举报前导师杨昀等北航校内人员论文异常，过往恩怨曝光，核查全面开启。
+                            </p>
+                        </div>
+                        <div class="fishbone-connector"></div>
+                        <div class="fishbone-node" style="background-color: #f43f5e;"></div>
+                    </div>
+
+                    <!-- 阶段 4：下 -->
+                    <div class="fishbone-item down" style="left: 87.5%;">
+                        <div class="fishbone-connector"></div>
+                        <div class="fishbone-node" style="background-color: #f59e0b;"></div>
+                        <div class="bg-slate-900/80 backdrop-blur-md p-8 rounded-[2rem] border-2 border-amber-500/30 hover:border-amber-500 transition-all shadow-2xl">
+                            <span class="px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-xs block w-max mb-3">2026.6月下旬至今</span>
+                            <h3 class="text-xl lg:text-2xl font-black text-slate-100 mb-3 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-5 h-5 text-amber-400"></i>
+                                4. 常态降温阶段
+                            </h3>
+                            <p class="text-sm lg:text-base text-slate-300 leading-relaxed font-bold">
+                                舆论放缓降温，全国高校同步开启顶刊论文主动自查，民间常态监督成型。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📱 移动端自适应竖版时间轴 (lg:hidden) - 标题正文同样放大 -->
+                <div class="lg:hidden flex flex-col gap-4 max-h-[55vh] overflow-y-auto pr-2">
+                    <!-- 阶段 1 -->
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-white/10">
+                        <span class="text-xs text-indigo-400 font-bold block mb-1">2026.4.8 起</span>
+                        <h3 class="text-lg font-black text-slate-100 mb-2 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> 1. 出圈成名阶段
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-bold">
+                            视频指证同济王平Nature数据编造，校方查实后免职，一战成名。
+                        </p>
+                    </div>
+                    <!-- 阶段 2 -->
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-white/10">
+                        <span class="text-xs text-emerald-400 font-bold block mb-1">2026.4.25 - 5.12</span>
+                        <h3 class="text-lg font-black text-slate-100 mb-2 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 2. 连环打假阶段
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-bold">
+                            集中举报 4 校 4 位杰青学者，促使高校批量介入并相继通报惩处。
+                        </p>
+                    </div>
+                    <!-- 阶段 3 -->
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-white/10">
+                        <span class="text-xs text-rose-400 font-bold block mb-1">2026.6.16</span>
+                        <h3 class="text-lg font-black text-slate-100 mb-2 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> 3. 溯源母校阶段
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-bold">
+                            实名举报北航常凌乾及杨昀等顶刊异常，学业恩怨浮出水面。
+                        </p>
+                    </div>
+                    <!-- 阶段 4 -->
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-white/10">
+                        <span class="text-xs text-amber-400 font-bold block mb-1">2026.6月下旬至今</span>
+                        <h3 class="text-lg font-black text-slate-100 mb-2 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 4. 常态降温阶段
+                        </h3>
+                        <p class="text-sm text-slate-300 leading-relaxed font-bold">
+                            防范风险放缓更新，激发全国高校开展大范围顶刊论著自查自净。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 全局统一页脚 -->
+            <footer class="text-center text-xs text-slate-500 font-bold tracking-widest border-t border-white/5 pt-4">
+                © 2026 AI赋能教学团队 | 科研红线与诚信教育
+            </footer>
+        </div>
+    </section>
+
+    <script>
+        // 初始化 Lucide 图标
+        lucide.createIcons();
+
+        // 视口渐次显现动画逻辑 (IntersectionObserver)
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { 
+            threshold: 0.15 
+        });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // 侧边栏进度导航激活与滚动同步逻辑
+        const dots = document.querySelectorAll('.progress-dot');
+        const sections = Array.from(dots).map(dot => document.getElementById(dot.dataset.target));
+
+        function updateNav() {
+            let currentId = '';
+            const offset = window.innerHeight / 2;
+            const scrollPos = window.scrollY + offset;
+
+            sections.forEach(section => {
+                if (section && scrollPos >= section.offsetTop) {
+                    currentId = section.id;
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.target === currentId);
+            });
+        }
+
+        window.addEventListener('scroll', updateNav);
+        window.addEventListener('resize', updateNav);
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const target = document.getElementById(dot.dataset.target);
+                if (target) {
+                    window.scrollTo({ 
+                        top: target.offsetTop, 
+                        behavior: 'smooth' 
+                    });
+                }
+            });
+        });
+
+        // 页面首次载入更新进度点
+        window.addEventListener('load', () => {
+            updateNav();
+            const h1Section = document.querySelector('#h1');
+            if (h1Section) {
+                h1Section.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

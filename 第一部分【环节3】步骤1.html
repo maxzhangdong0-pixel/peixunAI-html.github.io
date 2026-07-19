@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用 AI 进行科研的伦理规范 - 专题课</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            indigo: '#4f46e5',
+                            emerald: '#059669',
+                            rose: '#e11d48',
+                            amber: '#f59e0b',
+                            slate: '#0f172a',
+                            violet: '#7c3aed'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+
+        /* 极致的侧边毛玻璃进度导航 */
+        .progress-nav {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 1.8rem 0.8rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #475569;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            transform: scale(1.8);
+            background-color: #7c3aed !important;
+            box-shadow: 0 0 15px #7c3aed;
+        }
+
+        .progress-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-50%) translateX(10px);
+        }
+
+        .progress-dot:hover::after { 
+            opacity: 1; 
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* 滚动渐入动效 */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+        .section-py { 
+            padding-top: 8rem; 
+            padding-bottom: 8rem; 
+        }
+
+        /* 渐变流光卡片 (纯净版，去除繁杂，强调标题与徽章) */
+        .bento-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(124, 58, 237, 0.5);
+            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+    </style>
+</head>
+<body class="selection:bg-violet-600 selection:text-white overflow-x-hidden">
+
+    <!-- 侧边栏导航：对应 3 个环节 -->
+    <nav class="progress-nav hidden lg:flex">
+        <div class="progress-dot active" data-target="h0" data-label="00 专题导入" style="background-color: #7c3aed;"></div>
+        <div class="progress-dot" data-target="h1" data-label="01 伦理规范" style="background-color: #4f46e5;"></div>
+        <div class="progress-dot" data-target="h2" data-label="02 核心提炼" style="background-color: #059669;"></div>
+    </nav>
+
+    <!-- ==================== 环节0：课程首页 ==================== -->
+    <section id="h0" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-brand-slate via-slate-950 to-brand-slate px-6">
+        <!-- 装饰性彩色光晕 -->
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-900/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-indigo-950/20 rounded-full blur-[150px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10 reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-violet-400 mb-8 font-black tracking-widest text-sm uppercase">
+                <i data-lucide="scale" class="w-4 h-4"></i> RESEARCH ETHICS & INTEGRITY GUIDE
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black mb-12 tracking-tighter leading-none">
+                使用 AI 进行科研有哪些<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-indigo-400 to-emerald-400">科研伦理规定？</span>
+            </h1>
+            <p class="text-xl md:text-2xl font-bold text-slate-400 max-w-4xl mx-auto leading-relaxed mb-16">
+                大语言模型（LLM）与人工智能在解放生产力的同时，也深刻地改写了科研的游戏规则。透视国家部委、顶尖高校及国际出版集团的最新规范，守住科研人员的学术生命线。
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#h1" class="px-10 py-5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-lg rounded-2xl hover:from-violet-500 hover:to-indigo-500 transition-all shadow-lg hover:shadow-violet-500/20 inline-flex items-center gap-3">
+                    进入学习专题 <i data-lucide="arrow-down" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节1：伦理规定与指南展示 ==================== -->
+    <section id="h1" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-gradient-to-tr from-violet-600 to-indigo-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">01</div>
+                    <div>
+                        <span class="text-violet-400 font-black tracking-widest text-sm uppercase block mb-1">全球及国家级治理框架</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">科研伦理规定与指南</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl shrink-0">
+                    <i data-lucide="shield-check" class="text-emerald-400 w-5 h-5"></i>
+                    <span class="text-slate-300 font-bold">十项重要规范全景呈现</span>
+                </div>
+            </div>
+
+            <!-- Bento 错落网格排版 (纯净无解释版) -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                
+                <!-- 卡片 1 (占 6 列): 科技部指引 -->
+                <div class="md:col-span-6 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-violet-500/10 text-violet-400 font-black text-xs tracking-wider">国家部委 / 2023</span>
+                        <i data-lucide="building" class="w-6 h-6 text-violet-400"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-black text-white leading-snug tracking-tight">
+                        科技部《负责任研究行为规范指引（2023）》
+                    </h3>
+                </div>
+
+                <!-- 卡片 2 (占 6 列): 基金委规范 -->
+                <div class="md:col-span-6 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-black text-xs tracking-wider">国家自然科学基金委 / 2023</span>
+                        <i data-lucide="landmark" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-black text-white leading-snug tracking-tight">
+                        国家自然科学基金委员会《科研诚信规范手册》（2023）
+                    </h3>
+                </div>
+
+                <!-- 卡片 3 (占 12 列): 出版社边界指南3.0 (巨幕长幅) -->
+                <div class="md:col-span-12 p-10 rounded-[3rem] bento-card border border-emerald-500/30 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 px-6 py-2 bg-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-bl-3xl">
+                        学术出版联盟
+                    </div>
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="flex items-center gap-3">
+                            <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-black text-xs tracking-wider">多边合作共识 / 2026</span>
+                            <span class="text-slate-500 text-xs font-bold">中信所联合多家出版集团发布</span>
+                        </div>
+                        <i data-lucide="globe" class="w-8 h-8 text-emerald-400"></i>
+                    </div>
+                    <h3 class="text-3xl md:text-4xl font-black text-white leading-tight tracking-tighter">
+                        《学术出版中AIGC使用边界指南3.0》（2026）
+                    </h3>
+                </div>
+
+                <!-- 卡片 4 (占 4 列): 教育部意见 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider">高等院校 / 2024</span>
+                        <i data-lucide="graduation-cap" class="w-6 h-6 text-rose-400"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white leading-snug">
+                        教育部《关于加强高等学校科研诚信建设和学术不端治理的指导意见》（2024）
+                    </h3>
+                </div>
+
+                <!-- 卡片 5 (占 4 列): 复旦规定 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-400 font-black text-xs tracking-wider">学位论文 / 2024</span>
+                        <i data-lucide="award" class="w-6 h-6 text-amber-400"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white leading-snug">
+                        复旦大学《本科毕业论文（设计）中使用AI工具的规定（试行）》（2024）
+                    </h3>
+                </div>
+
+                <!-- 卡片 6 (占 4 列): 上海交大规范 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-400 font-black text-xs tracking-wider">日常教学 / 2025</span>
+                        <i data-lucide="book-open" class="w-6 h-6 text-amber-400"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white leading-snug">
+                        上海交通大学《关于在教育教学中使用AI的规范》（2025）
+                    </h3>
+                </div>
+
+                <!-- 卡片 7 (占 6 列): 中科院提醒 -->
+                <div class="md:col-span-6 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-violet-500/10 text-violet-400 font-black text-xs tracking-wider">科研国家队 / 2025</span>
+                        <i data-lucide="atom" class="w-6 h-6 text-violet-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white leading-snug">
+                        中科院《关于在科研活动中规范使用人工智能技术的诚信提醒》（2025）
+                    </h3>
+                </div>
+
+                <!-- 卡片 8 (占 6 列): 专家共识 -->
+                <div class="md:col-span-6 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-black text-xs tracking-wider">学术写作 / 2025</span>
+                        <i data-lucide="users" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white leading-snug">
+                        《生成式人工智能辅助学术论文写作的伦理要求专家共识》（2025）
+                    </h3>
+                </div>
+
+                <!-- 卡片 9 (占 12 列): 社科院规范 (12列长跨度) -->
+                <div class="md:col-span-12 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-black text-xs tracking-wider">人文社科 / 2026</span>
+                        <i data-lucide="library" class="w-6 h-6 text-emerald-400"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-black text-white leading-snug">
+                        中国社会科学院《人工智能辅助科研基本规范（试行）》（2026）
+                    </h3>
+                </div>
+
+                <!-- 卡片 10 (占 12 列): 十部门审查办法 (大底巨幕) -->
+                <div class="md:col-span-12 p-10 rounded-[3rem] bento-card border border-rose-500/30 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 px-6 py-2 bg-rose-600 text-white font-black text-xs uppercase tracking-widest rounded-bl-3xl">
+                        多部委联合发文
+                    </div>
+                    <div class="flex justify-between items-start mb-8">
+                        <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider">
+                            工信、发改、教育、科技、卫健等十部门联合 / 2026
+                        </span>
+                        <i data-lucide="shield-alert" class="w-8 h-8 text-rose-400"></i>
+                    </div>
+                    <h3 class="text-3xl md:text-4xl font-black text-white leading-tight tracking-tighter">
+                        《人工智能科技伦理审查与服务办法（试行）》（2026）
+                    </h3>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节2：三大核心红线提炼 ==================== -->
+    <section id="h2" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-emerald-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">02</div>
+                    <div>
+                        <span class="text-emerald-400 font-black tracking-widest text-sm uppercase block mb-1">科研人员日常行为准则</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">科研AI应用：三大不可逾越的红线</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 三个红线区 (纯净提炼) -->
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="p-10 bg-slate-950 rounded-[3rem] border border-slate-800 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-950/50 border border-emerald-900/50 flex items-center justify-center mb-8">
+                            <i data-lucide="user-x" class="text-emerald-400 w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-4">署名权限制</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                            任何生成式AI工具都不具备法人民事地位与署名归属资格。AI工具绝对不能列为论文的作者、共同作者或通讯作者。
+                        </p>
+                    </div>
+                    <span class="text-emerald-400 font-black text-sm tracking-widest block border-t border-slate-800/80 pt-4 uppercase">RED LINE 01 / 署名管理</span>
+                </div>
+
+                <div class="p-10 bg-slate-950 rounded-[3rem] border border-slate-800 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-950/50 border border-emerald-900/50 flex items-center justify-center mb-8">
+                            <i data-lucide="eye" class="text-emerald-400 w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-4">透明披露义务</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                            科研人员只要使用了生成式AI工具辅助论文创作，均必须在致谢、方法论或适当位置如实、公开披露模型版本及交互链。
+                        </p>
+                    </div>
+                    <span class="text-emerald-400 font-black text-sm tracking-widest block border-t border-slate-800/80 pt-4 uppercase">RED LINE 02 / 信息披露</span>
+                </div>
+
+                <div class="p-10 bg-slate-950 rounded-[3rem] border border-slate-800 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-950/50 border border-emerald-900/50 flex items-center justify-center mb-8">
+                            <i data-lucide="refresh-cw" class="text-emerald-400 w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-4">人类双重验证</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                            AI 生成的所有论文框架、引文文献及计算数据，皆面临产生事实幻觉的潜在风险，作者必须完全进行人工验证并自担版权责任。
+                        </p>
+                    </div>
+                    <span class="text-emerald-400 font-black text-sm tracking-widest block border-t border-slate-800/80 pt-4 uppercase">RED LINE 03 / 人工校验</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 页脚区 ==================== -->
+    <footer class="py-16 bg-slate-950 border-t border-slate-900 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-violet-950/10 to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-slate-400 text-sm font-black tracking-widest uppercase">
+                © 2026 AI赋能科研团队 | 科研AI伦理规范专题课
+            </p>
+            <div class="flex gap-6">
+                <a href="#h0" class="text-slate-500 hover:text-violet-400 font-black text-sm transition-all uppercase tracking-widest">返回课程顶部 ↑</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化 Lucide 图标组件
+        lucide.createIcons();
+
+        // 视口渐入（Reveal）观察者
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // 导航联动高亮系统
+        const dots = document.querySelectorAll('.progress-dot');
+        const sections = Array.from(dots).map(dot => document.getElementById(dot.dataset.target));
+
+        function updateNavActiveState() {
+            let currentActiveSectionId = '';
+            const scrollOffset = window.innerHeight / 2.2;
+            const currentScrollTop = window.scrollY + scrollOffset;
+
+            sections.forEach(section => {
+                if (section && currentScrollTop >= section.offsetTop) {
+                    currentActiveSectionId = section.id;
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.target === currentActiveSectionId);
+            });
+        }
+
+        window.addEventListener('scroll', updateNavActiveState);
+        window.addEventListener('resize', updateNavActiveState);
+
+        // 导航锚点点击平滑滚动
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetElement = document.getElementById(dot.dataset.target);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 初始化加载一次
+        window.addEventListener('load', () => {
+            updateNavActiveState();
+            // 首个环节显式激活
+            document.querySelector('#h0').classList.add('active');
+        });
+    </script>
+</body>
+</html>

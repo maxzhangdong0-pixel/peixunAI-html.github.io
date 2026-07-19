@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谁揭开了学术造假的面纱？—— 学术不端防范专题课</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            indigo: '#4f46e5',
+                            emerald: '#059669',
+                            rose: '#e11d48',
+                            amber: '#f59e0b',
+                            slate: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* 强制覆盖滚动条体验 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
+        }
+
+        /* 极致的侧边毛玻璃进度导航 */
+        .progress-nav {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 1.8rem 0.8rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #475569;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            transform: scale(1.8);
+            background-color: #4f46e5 !important;
+            box-shadow: 0 0 15px #4f46e5;
+        }
+
+        .progress-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-50%) translateX(10px);
+        }
+
+        .progress-dot:hover::after { 
+            opacity: 1; 
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* 3D 翻转卡片极致细节 */
+        .flip-card { 
+            perspective: 1200px; 
+            height: 420px; 
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner { 
+            transform: rotateY(180deg); 
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 2.5rem;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .flip-card-back { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            transform: rotateY(180deg); 
+        }
+
+        /* 滚动渐入动效 */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+        .section-py { 
+            padding-top: 8rem; 
+            padding-bottom: 8rem; 
+        }
+
+        /* 交互反馈动画 */
+        .tap-hover {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tap-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-brand-slate text-slate-100 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+    <!-- 侧边栏导航：对应 5 个环节 -->
+    <nav class="progress-nav hidden lg:flex">
+        <div class="progress-dot active" data-target="h0" data-label="00 课程引言" style="background-color: #4f46e5;"></div>
+        <div class="progress-dot" data-target="h1" data-label="01 制度化监督" style="background-color: #6366f1;"></div>
+        <div class="progress-dot" data-target="h2" data-label="02 内部反噬" style="background-color: #e11d48;"></div>
+        <div class="progress-dot" data-target="h3" data-label="03 竞争机制" style="background-color: #f59e0b;"></div>
+        <div class="progress-dot" data-target="h4" data-label="04 科学猎人" style="background-color: #059669;"></div>
+    </nav>
+
+    <!-- ==================== 环节0：课程首页 ==================== -->
+    <section id="h0" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-brand-slate via-slate-950 to-brand-slate px-6">
+        <!-- 装饰性光晕 -->
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-rose-950/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10 reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-indigo-400 mb-8 font-black tracking-widest text-sm uppercase">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> ACADEMIC INTEGRITY SPECIAL STUDY
+            </div>
+            <h1 class="text-7xl md:text-9xl font-black mb-12 tracking-tighter leading-none">
+                学术不端是被<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-rose-400 to-amber-400">谁举报的？</span>
+            </h1>
+            <p class="text-xl md:text-2xl font-bold text-slate-400 max-w-3xl mx-auto leading-relaxed mb-16">
+                数字时代，人机协同改变了知识生产的面貌。但在聚光灯的阴影处，学术净土的“吹哨人”已经悄然完成了武器升级。
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#h1" class="px-10 py-5 bg-indigo-600 text-white font-black text-lg rounded-2xl hover:bg-indigo-500 transition-all shadow-lg hover:shadow-indigo-500/20 inline-flex items-center gap-3">
+                    进入探秘课程 <i data-lucide="arrow-down" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节1：制度化监督（官方机制） ==================== -->
+    <section id="h1" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-indigo-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">01</div>
+                    <div>
+                        <span class="text-indigo-400 font-black tracking-widest text-sm uppercase block mb-1">官方主动防御体系</span>
+                        <h2 class="text-5xl font-black text-white">制度化监督与大数据倒查</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl">
+                    <i data-lucide="database" class="text-indigo-400 w-5 h-5"></i>
+                    <span class="text-slate-300 font-bold">触发主体：国家自然科学基金委 / 科技部</span>
+                </div>
+            </div>
+
+            <!-- 主内容格栅 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：3D 翻转交互提问区 (占 5 列) -->
+                <div class="lg:col-span-5 flex flex-col justify-between">
+                    <div class="flip-card w-full">
+                        <div class="flip-card-inner">
+                            <!-- 正面 -->
+                            <div class="flip-card-front">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-indigo-400 tracking-widest uppercase">INTERACTIVE QUESTION</span>
+                                    <i data-lucide="help-circle" class="w-8 h-8 text-indigo-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-black text-white mb-6 leading-tight">官方的大数据倒查是如何在海量申报书中精准锁定学术不端行为的？</h3>
+                                    <p class="text-slate-400 font-bold">悬停卡片，揭晓官方数字化侦防机制 ➔</p>
+                                </div>
+                                <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-indigo-500 h-full w-1/3"></div>
+                                </div>
+                            </div>
+                            <!-- 反面 -->
+                            <div class="flip-card-back">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-amber-400 tracking-widest uppercase">TECHNICAL REVELATION</span>
+                                    <i data-lucide="check-circle" class="w-8 h-8 text-amber-400"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-2xl font-black text-white mb-4">升级版“AI痕迹检测算法”</h4>
+                                    <p class="text-slate-300 font-bold leading-relaxed">
+                                        不仅审查传统的高重合度文本，官方数据库正依托语义分析检测“机械式雷同”、“多图跨项目滥用”，甚至通过逻辑链识别购买第三方公司代写及打招呼关系网络。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">移开鼠标返回原状态</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 环节1 AI时代警示 -->
+                    <div class="mt-8 p-8 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-[2.5rem] border border-indigo-900/30">
+                        <div class="flex items-center gap-4 mb-4">
+                            <i data-lucide="terminal" class="text-indigo-400 w-8 h-8"></i>
+                            <h4 class="text-xl font-black text-white">AI时代警示：不要迷信扩写与润色</h4>
+                        </div>
+                        <p class="text-slate-400 font-bold leading-relaxed">
+                            千万不要以为把申报书扔给 AI 润色、扩写就没人知道。官方的查重库和“AI痕迹检测算法”逐年升级，一旦文本生成的逻辑链被判定为“机械式雷同”或触发利益链红线，将直接面临官方的制度化审计。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：真实案例深度展示区 (占 7 列) -->
+                <div class="lg:col-span-7 space-y-8 flex flex-col justify-between">
+                    <!-- 真实案例1 -->
+                    <div class="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 hover:border-indigo-500/30 transition-all flex flex-col justify-between h-full">
+                        <div>
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-black text-xs tracking-wider">CASE STUDY 01</span>
+                                <span class="text-sm text-slate-500 font-bold">西安交通大学刘志奎案</span>
+                            </div>
+                            <h4 class="text-2xl font-black text-white mb-4">涉事论文多图重复滥用</h4>
+                            <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                                国家自然科学基金委2025年通报：涉事论文因多图重复滥用被基金委介入调查并撤稿。
+                            </p>
+                        </div>
+                        <div class="p-6 bg-red-950/20 rounded-2xl border border-red-900/30">
+                            <p class="text-red-400 font-black text-lg">
+                                处罚结果：追回已拨付资金，并取消国家自然科学基金项目申请和参与申请资格5年。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 真实案例2 -->
+                    <div class="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 hover:border-indigo-500/30 transition-all flex flex-col justify-between h-full">
+                        <div>
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-black text-xs tracking-wider">CASE STUDY 02</span>
+                                <span class="text-sm text-slate-500 font-bold">2026年首批通报案件</span>
+                            </div>
+                            <h4 class="text-2xl font-black text-white mb-4">46名学者遭一次性点名通报</h4>
+                            <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                                2026年1月23日通报：基金委一次性点名通报了46名学者，直接撕开了“购买第三方公司代写申请书”、“评审阶段实施请托（打招呼）”的利益链。
+                            </p>
+                        </div>
+                        <div class="p-6 bg-red-950/20 rounded-2xl border border-red-900/30">
+                            <p class="text-red-400 font-black text-lg">
+                                处罚结果：斩断灰色利益链，多名涉事专家被永久取消评审资格。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节2：学生/同行举报导师（利益冲突） ==================== -->
+    <section id="h2" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-brand-rose text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">02</div>
+                    <div>
+                        <span class="text-brand-rose font-black tracking-widest text-sm uppercase block mb-1">“下克上”与科研伦理反噬</span>
+                        <h2 class="text-5xl font-black text-white">内部危机：学生、科研助理实名起义</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-6 py-3 rounded-2xl">
+                    <i data-lucide="users-round" class="text-brand-rose w-5 h-5"></i>
+                    <span class="text-slate-300 font-bold">触发主体：课题组研究生 / 核心助理</span>
+                </div>
+            </div>
+
+            <!-- 主内容格栅 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：真实案例华中农大案 (占 7 列) -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-8">
+                    <div class="p-10 bg-slate-950 rounded-[3rem] border-2 border-brand-rose/20 relative overflow-hidden h-full">
+                        <div class="absolute top-0 right-0 px-6 py-2 bg-brand-rose text-white font-black text-xs uppercase tracking-widest rounded-bl-3xl">
+                            CRITICAL CASE
+                        </div>
+                        <div class="mb-8">
+                            <span class="text-brand-rose font-black text-sm block mb-2">华中农业大学黄飞若教授案</span>
+                            <h3 class="text-3xl font-black text-white mb-6">11名硕博研究生的联手死谏</h3>
+                            <p class="text-slate-300 font-bold leading-relaxed text-lg mb-6">
+                                被其课题组的 11 名硕士、博士研究生集体实名举报。学生们联手整理了长达 <span class="text-brand-rose underline decoration-2 font-black">125 页的 PDF 举报材料</span>，详细控诉其强迫学生篡改实验数据、编造实验结果等学术不端行为。
+                            </p>
+                        </div>
+                        <div class="p-6 bg-brand-rose/10 border border-brand-rose/30 rounded-2xl">
+                            <h4 class="font-black text-white text-xl mb-2">学校最终通报决议：</h4>
+                            <p class="text-slate-300 font-bold">撤销黄飞若校内一切职务，解除聘用合同。该起事件成为了中国科研界关于伦理纠错的标志性案例。</p>
+                        </div>
+                    </div>
+
+                    <!-- 机制触发 -->
+                    <div class="p-10 bg-slate-950 rounded-[3rem] border border-slate-800">
+                        <h4 class="text-xl font-black text-white mb-4">导火索：决裂式实名曝光的深层诱因</h4>
+                        <p class="text-slate-400 font-bold leading-relaxed">
+                            这类危机通常由于利益分配严重不公、导师过度压榨学生劳动力、强行掠夺学生学术成果、或是逼迫学生在科研数据中蓄意“注水”引发。最终突破道德与忍耐底线，爆发出无可挽回的内部抗争。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：3D 翻转卡片与AI时代警示 (占 5 列) -->
+                <div class="lg:col-span-5 flex flex-col justify-between">
+                    <div class="flip-card w-full">
+                        <div class="flip-card-inner">
+                            <!-- 正面 -->
+                            <div class="flip-card-front" style="background: linear-gradient(135deg, #271c1f 0%, #0f172a 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-rose tracking-widest uppercase">LAB SYSTEM WEAKNESS</span>
+                                    <i data-lucide="help-circle" class="w-8 h-8 text-brand-rose"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-black text-white mb-6 leading-tight">在密闭的实验室生态中，导师和团队学术造假的秘密是否能高枕无忧？</h3>
+                                    <p class="text-slate-400 font-bold">悬停翻转，洞察信任链条的死穴 ➔</p>
+                                </div>
+                                <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-brand-rose h-full w-2/3"></div>
+                                </div>
+                            </div>
+                            <!-- 反面 -->
+                            <div class="flip-card-back" style="background: linear-gradient(135deg, #0f172a 0%, #450a0a 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-amber tracking-widest uppercase">SYSTEM COLLAPSE</span>
+                                    <i data-lucide="alert-triangle" class="w-8 h-8 text-brand-amber"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-2xl font-black text-white mb-4">秘密瓦解的一大根源</h4>
+                                    <p class="text-slate-300 font-bold leading-relaxed">
+                                        数字科研环境高度依赖透明分工，实验记录、原始日志以及学生提交的文件是数字铁证。在共同知情权下，任何导师发起的“系统性欺诈”，都会成为悬在其脖子上的达摩克利斯之剑。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">移开鼠标返回原状态</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 环节2 AI时代警示 -->
+                    <div class="mt-8 p-8 bg-gradient-to-r from-slate-950 to-rose-950/30 rounded-[2.5rem] border border-brand-rose/20">
+                        <div class="flex items-center gap-4 mb-4">
+                            <i data-lucide="skull" class="text-brand-rose w-8 h-8"></i>
+                            <h4 class="text-xl font-black text-white">AI时代警示：不要让AI催生低水平欺骗</h4>
+                        </div>
+                        <p class="text-slate-400 font-bold leading-relaxed">
+                            在人机协同的教学与科研中，导师如果自己用 AI 敷衍教学或科研，甚至要求、默许学生使用 AI 批量灌水，这种低质量的“秘密”在团队内部根本守不住，极易引发团队内部的伦理反噬。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节3：同事/竞争对手举报（职场博弈） ==================== -->
+    <section id="h3" class="min-h-screen flex items-center section-py px-6 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-brand-amber text-slate-950 rounded-3xl font-black text-3xl shadow-lg shrink-0">03</div>
+                    <div>
+                        <span class="text-brand-amber font-black tracking-widest text-sm uppercase block mb-1">职场晋升与项目竞争黄金窗</span>
+                        <h2 class="text-5xl font-black text-white">同事与直接竞争对手的狙击</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl">
+                    <i data-lucide="swords" class="text-brand-amber w-5 h-5"></i>
+                    <span class="text-slate-300 font-bold">触发主体：同教研室同事 / 同行评审专家</span>
+                </div>
+            </div>
+
+            <!-- 主内容格栅 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：3D 翻转卡片与AI时代警示 (占 5 列) -->
+                <div class="lg:col-span-5 flex flex-col justify-between">
+                    <div class="flip-card w-full">
+                        <div class="flip-card-inner">
+                            <!-- 正面 -->
+                            <div class="flip-card-front" style="background: linear-gradient(135deg, #2d2215 0%, #0f172a 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-amber tracking-widest uppercase">COMPETITIVE PRESSURE</span>
+                                    <i data-lucide="help-circle" class="w-8 h-8 text-brand-amber"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-black text-white mb-6 leading-tight">为何学术不端行为最容易在“职称公示期”遭到曝光？</h3>
+                                    <p class="text-slate-400 font-bold">悬停卡片，了解职场狙击窗口机制 ➔</p>
+                                </div>
+                                <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-brand-amber h-full w-3/4"></div>
+                                </div>
+                            </div>
+                            <!-- 反面 -->
+                            <div class="flip-card-back" style="background: linear-gradient(135deg, #0f172a 0%, #2d1e05 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-indigo tracking-widest uppercase">THE GOLDEN WINDOW</span>
+                                    <i data-lucide="clock" class="w-8 h-8 text-brand-indigo"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-2xl font-black text-white mb-4">精准狙击的“黄金窗口期”</h4>
+                                    <p class="text-slate-300 font-bold leading-relaxed">
+                                        在职称评定、基金或荣誉公示期，规则赋予了最畅通的异议通道。此时，竞争对手会联合“学术侦防手段”对候选人的代表作进行地毯式审查，以达到一票否决的作用。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">移开鼠标返回原状态</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 环节3 AI时代警示 -->
+                    <div class="mt-8 p-8 bg-gradient-to-r from-slate-900 to-amber-950/20 rounded-[2.5rem] border border-brand-amber/20">
+                        <div class="flex items-center gap-4 mb-4">
+                            <i data-lucide="eye-off" class="text-brand-amber w-8 h-8"></i>
+                            <h4 class="text-xl font-black text-white">AI时代警示：大模型的文献“幻觉”致命伤</h4>
+                        </div>
+                        <p class="text-slate-400 font-bold leading-relaxed">
+                            一旦被同行揪出“参考文献是由大模型凭空捏造的幻觉文献”，或者核心逻辑存在明显的 AI 洗稿痕迹，在公示期被一封举报信送达学校学术委员会，将直接导致学术生涯的社会性死亡。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：真实案例撤稿风波 (占 7 列) -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-8">
+                    <div class="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-8">
+                                <span class="px-4 py-1 rounded-full bg-brand-amber/10 text-brand-amber font-black text-xs tracking-wider">GLOBAL AUDIT</span>
+                                <span class="text-sm text-slate-500 font-bold">Hindawi 期刊大范围撤稿风波</span>
+                            </div>
+                            <h3 class="text-3xl font-black text-white mb-6">教育部全面彻查第三方代写代投</h3>
+                            <p class="text-slate-300 font-bold leading-relaxed text-lg mb-8">
+                                国内外多所高校的教师在职称评定或项目申报的公示期，被竞争对手向学校纪委、学术委员会举报其代表作涉嫌“同行评议造假”或“论文工厂代写”。
+                            </p>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4 p-6 bg-slate-950/50 rounded-2xl border border-slate-800">
+                            <div>
+                                <h4 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-1">漏洞根源</h4>
+                                <p class="text-slate-300 font-bold">无法提供支撑核心结论的原始实验数据。</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-1">严重后果</h4>
+                                <p class="text-brand-rose font-bold">论文被期刊撤回，相关教师职称评定直接被“一票否决”。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 机制触发 -->
+                    <div class="p-8 bg-slate-900 rounded-3xl border border-slate-800">
+                        <div class="flex gap-4">
+                            <i data-lucide="shield" class="text-brand-indigo shrink-0 w-8 h-8"></i>
+                            <p class="text-slate-400 font-bold leading-relaxed">
+                                对手常在职称评定公示、国家自然/社科基金公示、或重大科研奖项评选的黄金窗口期，使用 AI 痕迹检测对代表作扫描和疑点取证。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节4：学术打假人（社会力量） ==================== -->
+    <section id="h4" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            <!-- 头部标题区 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-brand-emerald text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">04</div>
+                    <div>
+                        <span class="text-brand-emerald font-black tracking-widest text-sm uppercase block mb-1">地毯式数字排查与公益力量</span>
+                        <h2 class="text-5xl font-black text-white">打假猎人、社会公众与 PubPeer 社区</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-6 py-3 rounded-2xl">
+                    <i data-lucide="globe" class="text-brand-emerald w-5 h-5"></i>
+                    <span class="text-slate-300 font-bold">触发主体：PubPeer 团队 / 匿名打假科学家 / 耿同学</span>
+                </div>
+            </div>
+
+            <!-- 主内容格栅 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：工作机制解析 (占 6 列) -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-8">
+                    <div class="p-10 bg-slate-950 rounded-[3rem] border border-slate-800 h-full flex flex-col justify-between">
+                        <div>
+                            <div class="flex gap-3 items-center mb-6">
+                                <i data-lucide="glasses" class="text-brand-emerald w-8 h-8"></i>
+                                <h3 class="text-2xl font-black text-white">公益打假人的底层工作逻辑</h3>
+                            </div>
+                            <p class="text-slate-300 font-bold leading-relaxed mb-6">
+                                这是一种纯粹的、跨区域和跨时间的公益性学术净化机制。打假人与作者可能毫无直接利益冲突。他们通常利用强大的数字比对工具和交叉网络手段，展开极其精准的技术围剿：
+                            </p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-4 items-start p-4 bg-slate-900 rounded-2xl">
+                                <span class="bg-brand-emerald/10 text-brand-emerald px-3 py-1 rounded font-black text-sm">IMAGE</span>
+                                <p class="text-slate-400 font-bold text-sm">使用 ImageTwin、Photoshop 等对比软件，专门抓取多篇文章、多张蛋白质凝胶图（Western Blot）中隐藏的修图、克隆、切片翻转和局部抹除痕迹。</p>
+                            </div>
+                            <div class="flex gap-4 items-start p-4 bg-slate-900 rounded-2xl">
+                                <span class="bg-brand-emerald/10 text-brand-emerald px-3 py-1 rounded font-black text-sm">CODE</span>
+                                <p class="text-slate-400 font-bold text-sm">对论文中开源的代码及数据进行严格重跑，检验实验结果在第三方条件下的可重复性（Reproducibility）。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 警告提示 -->
+                    <div class="p-8 bg-gradient-to-r from-slate-950 to-emerald-950/20 rounded-3xl border border-brand-emerald/20">
+                        <div class="flex gap-4">
+                            <i data-lucide="activity" class="text-brand-emerald shrink-0 w-8 h-8"></i>
+                            <p class="text-slate-400 font-bold leading-relaxed text-sm">
+                                任何学术轨迹都会在数字洪流中被刻下永久烙印，这意味着多年前发表的违规成果依然有可能在聚光灯下引爆。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：真实案例“同一块桌布与同一把尺子”连环翻车案 (占 6 列) -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-8">
+                    <div class="p-10 bg-slate-950 rounded-[3rem] border-2 border-brand-emerald/20 h-full flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="px-4 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald font-black text-xs tracking-wider">SCIENTIFIC SCANDAL</span>
+                                <span class="text-sm text-slate-500 font-bold">PubPeer 爆料风波</span>
+                            </div>
+                            <h3 class="text-3xl font-black text-white mb-6">“同一块格子桌布与一把尺子”连环翻车案</h3>
+                            <p class="text-slate-300 font-bold leading-relaxed text-lg mb-6">
+                                国际著名的匿名同行评议网站 PubPeer 及伊丽莎白·比克（Elisabeth Bik）打假团队爆料：
+                            </p>
+                            <p class="text-slate-400 font-bold leading-relaxed mb-6">
+                                团队通过算法比对发现，包括 <strong class="text-white">同济大学、兰州大学、中国医科大学</strong> 等多所高校的不同课题组的硕士、博士论文中，实验背景里竟然出现了<strong class="text-brand-emerald">“同一块格子桌布”</strong>和<strong class="text-brand-emerald">“同一把塑料尺子”</strong>。
+                            </p>
+                        </div>
+                        <div class="p-6 bg-red-950/20 rounded-2xl border border-red-900/30">
+                            <p class="text-red-400 font-black text-lg">
+                                连锁风波：这些被“论文工厂”流水线炮制的假论文，在曝光后引发了相关高校海啸般的学位撤销和导师严厉追责。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 环节4 AI时代警示 -->
+                    <div class="p-8 bg-gradient-to-r from-slate-950 to-brand-slate rounded-[2.5rem] border border-slate-800">
+                        <div class="flex items-center gap-4 mb-4">
+                            <i data-lucide="eye" class="text-brand-emerald w-8 h-8"></i>
+                            <h4 class="text-xl font-black text-white">AI时代警示：无处遁形的算法荧光</h4>
+                        </div>
+                        <p class="text-slate-400 font-bold leading-relaxed">
+                            过去的论文可能藏得住，但在数字时代，任何一篇论文都可能在多年后被拉出来放在聚光灯下审视。你用 AI 调整的数据、洗稿的文本，在专门的算法眼中就像“夜空中的萤火虫”一样明显。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 页脚区 ==================== -->
+    <footer class="py-16 bg-slate-950 border-t border-slate-900 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/10 to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-slate-400 text-sm font-black tracking-widest uppercase">
+                © 2026 AI赋能科研团队 | 学术不端防范专题课
+            </p>
+            <div class="flex gap-6">
+                <a href="#h0" class="text-slate-500 hover:text-indigo-400 font-black text-sm transition-all uppercase tracking-widest">BACK TO TOP ↑</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化 Lucide 图标组件
+        lucide.createIcons();
+
+        // 视口渐入（Reveal）观察者
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // 导航联动高亮系统
+        const dots = document.querySelectorAll('.progress-dot');
+        const sections = Array.from(dots).map(dot => document.getElementById(dot.dataset.target));
+
+        function updateNavActiveState() {
+            let currentActiveSectionId = '';
+            const scrollOffset = window.innerHeight / 2.2;
+            const currentScrollTop = window.scrollY + scrollOffset;
+
+            sections.forEach(section => {
+                if (section && currentScrollTop >= section.offsetTop) {
+                    currentActiveSectionId = section.id;
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.target === currentActiveSectionId);
+            });
+        }
+
+        window.addEventListener('scroll', updateNavActiveState);
+        window.addEventListener('resize', updateNavActiveState);
+
+        // 导航锚点点击平滑滚动
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetElement = document.getElementById(dot.dataset.target);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 初始化加载一次
+        window.addEventListener('load', () => {
+            updateNavActiveState();
+            // 首个环节显式激活
+            document.querySelector('#h0').classList.add('active');
+        });
+    </script>
+</body>
+</html>

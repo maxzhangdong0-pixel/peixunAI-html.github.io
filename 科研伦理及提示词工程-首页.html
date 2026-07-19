@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 赋能科研 - 科研伦理与提示词工程</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fcfcfc;
+            color: #1a202c;
+            overflow-x: hidden;
+        }
+        /* 页面入场微动画 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: radial-gradient(circle, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-100 bg-grid-pattern antialiased">
+
+    <section class="min-h-screen flex items-center justify-center py-20 px-6 relative overflow-hidden">
+        
+        <!-- 背景流光装饰 -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-200/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-[300px] h-[300px] bg-emerald-200/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto w-full text-center relative z-10 reveal">
+            
+            <p class="text-indigo-600 font-black text-lg md:text-xl mb-4 tracking-[0.3em] uppercase">AI 赋能科研系列课程</p>
+            <h1 class="text-5xl md:text-8xl font-black mb-8 text-slate-900 tracking-tighter leading-tight">
+                科研伦理与<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500">
+                    提示词工程
+                </span>
+            </h1>
+
+            <!-- 移动至此并显著增大字号与边距的主讲人信息框 -->
+            <div class="inline-flex items-center gap-4 px-8 py-4.5 rounded-[2rem] bg-indigo-50 border-2 border-indigo-100/80 shadow-md mb-16 hover:shadow-lg transition-all duration-300">
+                <i data-lucide="graduation-cap" class="w-6 h-6 md:w-8 md:h-8 text-indigo-600"></i>
+                <span class="text-indigo-900 font-black text-lg md:text-2xl tracking-wider">
+                    主讲人：张冬 <span class="mx-2 opacity-40">|</span> 供应链管理学院
+                </span>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-left">
+                
+                <!-- 认知目标 -->
+                <div class="p-10 bg-white/80 backdrop-blur-md rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-100/50 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-8">
+                            <i data-lucide="shield-alert" class="w-7 h-7 text-rose-600"></i>
+                        </div>
+                        <span class="text-xs font-black text-rose-600 uppercase tracking-widest block mb-2">COGNITIVE GOAL</span>
+                        <h3 class="text-3xl font-black text-slate-900 mb-6">认知目标</h3>
+                        <p class="text-slate-600 font-bold leading-relaxed text-lg">
+                            深刻理解 AI 时代下科研伦理的新挑战（如生成式 AI 带来的科研失范行为），并牢固掌握学术诚信的基本规范。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 技能目标 -->
+                <div class="p-10 bg-white/80 backdrop-blur-md rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-100/50 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center mb-8">
+                            <i data-lucide="cpu" class="w-7 h-7 text-indigo-600"></i>
+                        </div>
+                        <span class="text-xs font-black text-indigo-600 uppercase tracking-widest block mb-2">SKILL GOAL</span>
+                        <h3 class="text-3xl font-black text-slate-900 mb-6">技能目标</h3>
+                        <p class="text-slate-600 font-bold leading-relaxed text-lg">
+                            熟练掌握标准提示词（Prompt）的“五要素”核心结构；并学会利用对话历史链条，实现人机协同的动态迭代与深度优化。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 应用目标 -->
+                <div class="p-10 bg-white/80 backdrop-blur-md rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-100/50 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mb-8">
+                            <i data-lucide="sparkles" class="w-7 h-7 text-emerald-600"></i>
+                        </div>
+                        <span class="text-xs font-black text-emerald-600 uppercase tracking-widest block mb-2">APPLICATION GOAL</span>
+                        <h3 class="text-3xl font-black text-slate-900 mb-6">应用目标</h3>
+                        <p class="text-slate-600 font-bold leading-relaxed text-lg">
+                            能够自如地在日常学术活动中使用 AI 进行高质量学术提示词的独立撰写、评估和反复修改微调。
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            
+
+        </div>
+    </section>
+
+    <footer class="py-12 bg-white text-center text-slate-400 text-sm font-bold tracking-widest border-t border-slate-100 relative z-20">
+        © 2026 AI赋能科研团队 | 科研伦理与提示词工程 封面首页
+    </footer>
+
+    <script>
+        // 初始化精美的 Lucide 矢量图标
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研伦理五大核心问题 - 前言</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fafafa;
+        }
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: radial-gradient(circle, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-100 bg-grid-pattern antialiased text-slate-900 h-screen flex flex-col justify-between overflow-hidden p-6 md:p-12">
+
+    <!-- 顶冠极简“前言”标题 -->
+    <div class="text-center">
+        <span class="text-indigo-600 font-black text-xs md:text-sm tracking-[0.3em] uppercase block">AI 赋能科研系列课程</span>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mt-1">前言</h1>
+    </div>
+
+    <!-- 5排垂直堆叠的极简大圆角问题框，使用 flex-1 保证单屏幕完美等分自适应 -->
+    <main class="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center gap-4 my-6">
+        
+        <!-- 问题 1 -->
+        <div class="flex-1 bg-white border border-slate-100 hover:border-indigo-100 shadow-lg hover:shadow-2xl rounded-[2.5rem] p-8 flex items-center gap-8 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i data-lucide="languages" class="w-8 h-8 text-emerald-600"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-snug tracking-tight">
+                用 DeepSeek 翻译和润色论文的英文语言，算不算学术不端？
+            </h2>
+        </div>
+
+        <!-- 问题 2 -->
+        <div class="flex-1 bg-white border border-slate-100 hover:border-indigo-100 shadow-lg hover:shadow-2xl rounded-[2.5rem] p-8 flex items-center gap-8 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-snug tracking-tight">
+                让 AI 写了一段文献综述，直接贴进基金申报书里，算不算学术造假？
+            </h2>
+        </div>
+
+        <!-- 问题 3 -->
+        <div class="flex-1 bg-white border border-slate-100 hover:border-indigo-100 shadow-lg hover:shadow-2xl rounded-[2.5rem] p-8 flex items-center gap-8 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-600"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-snug tracking-tight">
+                论文里引用了 AI 凭空捏造的“幻觉文献”，属于严重违反科研诚信的行为？
+            </h2>
+        </div>
+
+        <!-- 问题 4 -->
+        <div class="flex-1 bg-white border border-slate-100 hover:border-indigo-100 shadow-lg hover:shadow-2xl rounded-[2.5rem] p-8 flex items-center gap-8 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i data-lucide="users" class="w-8 h-8 text-amber-500"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-snug tracking-tight">
+                某 AI 绘图工具对实验图表做出了重大贡献，可以把它列为论文的共同作者？
+            </h2>
+        </div>
+
+        <!-- 问题 5 -->
+        <div class="flex-1 bg-white border border-slate-100 hover:border-indigo-100 shadow-lg hover:shadow-2xl rounded-[2.5rem] p-8 flex items-center gap-8 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i data-lucide="pen-tool" class="w-8 h-8 text-rose-600"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-snug tracking-tight">
+                只要在论文最后声明“使用了 AI”，整篇论文的核心创新和结论就可以由 AI 代写？
+            </h2>
+        </div>
+
+    </main>
+
+    <!-- 极简底部版权声明 -->
+    <footer class="text-center text-slate-300 text-xs font-bold tracking-widest">
+        © 2026 AI赋能教学团队 | 科研伦理五个核心问题
+    </footer>
+
+    <script>
+        // 初始化 Lucide 矢量图标，确保轻量级渲染
+        lucide.createIcons();
+    </script>
+</body>
+</html>

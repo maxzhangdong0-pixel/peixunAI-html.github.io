@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真实警示录：学术不端是被谁举报的？ —— 场景案例微课</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            indigo: '#4f46e5',
+                            emerald: '#059669',
+                            rose: '#e11d48',
+                            amber: '#f59e0b',
+                            slate: '#0f172a',
+                            violet: '#7c3aed'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+
+        /* 极简毛玻璃侧边栏进度导航 */
+        .progress-nav {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem 0.6rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #475569;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            transform: scale(1.8);
+            background-color: #e11d48 !important; /* 警告主色调红色 */
+            box-shadow: 0 0 15px #e11d48;
+        }
+
+        .progress-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-50%) translateX(10px);
+        }
+
+        .progress-dot:hover::after { 
+            opacity: 1; 
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* 3D 翻转卡片 */
+        .flip-card { 
+            perspective: 1200px; 
+            height: 380px; 
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner { 
+            transform: rotateY(180deg); 
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+        .flip-card-back { 
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(153, 27, 27, 0.3) 100%);
+            transform: rotateY(180deg); 
+        }
+
+        /* 滚动渐入动效 */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+        .section-py { 
+            padding-top: 8rem; 
+            padding-bottom: 8rem; 
+        }
+
+        /* Bento 纯净卡片 */
+        .bento-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.3) 0%, rgba(15, 23, 42, 0.7) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(225, 29, 72, 0.4);
+            box-shadow: 0 20px 40px rgba(225, 29, 72, 0.1);
+        }
+
+        /* 鱼骨流程图核心机制 */
+        .fishbone-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+        .fishbone-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #4f46e5 0%, #059669 100%);
+            transform: translateX(-50%);
+            display: none;
+        }
+        @media (min-width: 1024px) {
+            .fishbone-spine { display: block; }
+            .fishbone-node-left { margin-right: 50%; padding-right: 3rem; text-align: right; }
+            .fishbone-node-right { margin-left: 50%; padding-left: 3rem; text-align: left; }
+        }
+    </style>
+</head>
+<body class="selection:bg-rose-600 selection:text-white overflow-x-hidden">
+
+    <!-- 侧边进度导航 -->
+    <nav class="progress-nav hidden lg:flex">
+        <div class="progress-dot active" data-target="h0" data-label="00 专题首页" style="background-color: #e11d48;"></div>
+        <div class="progress-dot" data-target="h1" data-label="01 图像类翻车" style="background-color: #f59e0b;"></div>
+        <div class="progress-dot" data-target="h2" data-label="02 文献幻觉案" style="background-color: #e11d48;"></div>
+        <div class="progress-dot" data-target="h3" data-label="03 代写残留案" style="background-color: #7c3aed;"></div>
+        <div class="progress-dot" data-target="h4" data-label="04 署名零容忍" style="background-color: #4f46e5;"></div>
+        <div class="progress-dot" data-target="h5" data-label="05 审稿密泄案" style="background-color: #f59e0b;"></div>
+        <div class="progress-dot" data-target="h6" data-label="06 涉密小李案" style="background-color: #e11d48;"></div>
+        <div class="progress-dot" data-target="h7" data-label="07 避坑指南SOP" style="background-color: #059669;"></div>
+    </nav>
+
+    <!-- ==================== 环节0：首页大图 ==================== -->
+    <section id="h0" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-brand-slate via-slate-950 to-brand-slate px-6">
+        <div class="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-rose-950/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-950/20 rounded-full blur-[130px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10 reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-rose-400 mb-8 font-black tracking-widest text-sm uppercase">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> REAL WARNING CASES & LESSONS
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black mb-12 tracking-tighter leading-none">
+                AI 协助学术造假？<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-400 to-indigo-400">具体真实的场景案例</span>
+            </h1>
+            <p class="text-xl md:text-2xl font-bold text-slate-400 max-w-4xl mx-auto leading-relaxed mb-16">
+                “Testtomcels”、幽灵文献、ChatGPT 指令遗留、AI 批量出具审稿意见... 这些荒诞的漏洞是如何将原本神圣的科学殿堂变成充满低级闹剧的围观现场？
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#h1" class="px-10 py-5 bg-gradient-to-r from-rose-600 to-amber-600 text-white font-black text-lg rounded-2xl hover:from-rose-500 hover:to-amber-500 transition-all shadow-lg hover:shadow-rose-500/20 inline-flex items-center gap-3">
+                    进入警示现场 <i data-lucide="arrow-down" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节1：图像类翻车 ==================== -->
+    <section id="h1" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-gradient-to-tr from-rose-600 to-amber-500 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">01</div>
+                    <div>
+                        <span class="text-rose-400 font-black tracking-widest text-sm uppercase block mb-1">IMAGE-BASED ACADEMIC FAILS</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">图像类：AI 生图翻车最快、最丢人</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 左右布局展示 -->
+            <div class="grid lg:grid-cols-12 gap-12 items-stretch">
+                <!-- 左侧：动态图片加载与后备SVG机制 -->
+                <div class="lg:col-span-5 p-8 rounded-[3rem] bg-slate-900/60 border border-slate-800 flex flex-col justify-center items-center relative overflow-hidden min-h-[350px]">
+                    <div class="absolute top-4 left-4 text-slate-500 text-xs font-mono">CASE_VISUAL_STUDY</div>
+                    
+                    <!-- 级联图片元素：优先加载本地，次选网络，最终回退SVG -->
+                    <img 
+                        id="target-case-img"
+                        src="image/ScreenShot_2026-07-18_014908_807.png" 
+                        alt="大鼠论文争议示意图"
+                        data-retry-stage="local"
+                        onerror="handleImageLoadFailure(this)"
+                        class="w-full max-h-[260px] object-contain rounded-2xl border border-slate-800/80 shadow-2xl transition-all duration-300 hover:scale-[1.02]"
+                    />
+
+                    <!-- 后备SVG（默认隐藏，仅在两次图片加载皆失败时触发显示） -->
+                    <div id="fallback-svg-wrapper" class="hidden w-full flex flex-col items-center">
+                        <svg class="w-full max-w-[280px]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 大鼠抽象形变 -->
+                            <path d="M40,150 C50,110 80,100 120,120 C150,130 170,100 180,80 C185,70 190,40 160,50 C130,60 110,80 80,85 C50,90 20,110 15,130 Z" fill="#334155" stroke="#475569" stroke-width="2"/>
+                            <!-- 荒谬放大器官 -->
+                            <ellipse cx="140" cy="110" rx="30" ry="25" fill="#ef4444" opacity="0.8" stroke="#f43f5e" stroke-width="3" stroke-dasharray="4 4"/>
+                            <!-- 连接线乱指 -->
+                            <path d="M80,85 L140,110 M140,110 L160,50" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                            <!-- 错误胡言乱语字符 -->
+                            <text x="75" y="145" fill="#f87171" font-family="monospace" font-size="12" font-weight="900" transform="rotate(-5, 75, 145)">"Testtomcels"</text>
+                            <!-- 标尺乱码 -->
+                            <text x="20" y="180" fill="#94a3b8" font-family="sans-serif" font-size="8">Scale: 1000m/s????</text>
+                            <!-- 警告蒙版 -->
+                            <rect x="0" y="0" width="200" height="200" fill="rgba(244,63,94,0.06)"/>
+                        </svg>
+                    </div>
+                    
+                    <div class="mt-6 px-4 py-2 rounded-xl bg-rose-950/30 border border-rose-900/40 text-center w-full">
+                        <p class="text-rose-400 font-black text-sm">解剖学完全错误的“大鼠图”与乱码字符 Testtomcels</p>
+                    </div>
+                </div>
+
+                <!-- 右侧：文字说明 -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-6">
+                    <div class="p-8 md:p-10 rounded-[3rem] bento-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider">西安红会医院 / 2024.2</span>
+                            <span class="text-slate-500 text-sm font-bold">Frontiers in Cell and Developmental Biology</span>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-black text-white mb-6 leading-snug">
+                            大鼠生殖系统示意图：解剖学上的彻底荒诞
+                        </h3>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-6">
+                            西安交大附属红会医院三位作者在探讨“精子干细胞与JAK/STAT信号通路”关系时，由于贪图省事直接使用了 Midjourney 画图。
+                        </p>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-8">
+                            这张图展示了一个绝对巨大、且完全不切实际的老鼠解剖结构，信号通路图上甚至充斥着 AI 胡乱捏造、毫无逻辑的单词 “<span class="text-rose-400 font-black underline underline-offset-4">Testtomcels</span>”。
+                        </p>
+                        <div class="flex items-center gap-4 p-5 bg-red-950/20 border border-red-900/30 rounded-2xl">
+                            <i data-lucide="clock" class="text-rose-500 shrink-0 w-8 h-8"></i>
+                            <p class="text-rose-400 font-black text-base">
+                                撤稿速度创世界纪录：论文 2 月 13 日刚上线，2 月 16 日即因大量同行举报而撤稿，被称为“史上最短命 SCI 论文”。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节2：文献幻觉类 ==================== -->
+    <section id="h2" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-rose-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">02</div>
+                    <div>
+                        <span class="text-rose-400 font-black tracking-widest text-sm uppercase block mb-1">CITATION HALLUCINATION</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">文献幻觉类：最“坑导师”的一条</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容双网格 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：文献对比 Mockup -->
+                <div class="lg:col-span-6 p-8 rounded-[3rem] bg-slate-950 border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
+                            <span class="text-xs font-mono text-rose-400 font-bold">REFERENCES DATA AUDIT</span>
+                            <span class="px-3 py-1 bg-rose-950/30 text-rose-500 border border-rose-900/50 rounded-lg text-xs font-bold">24 / 61 INVALID</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-6">文献数据伪造报告</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-slate-900 rounded-xl border border-rose-900/20 relative">
+                                <span class="absolute right-4 top-4 text-xs text-rose-500 font-bold">404 NOT FOUND</span>
+                                <p class="text-xs text-slate-500 font-mono mb-1">Ref [14] DOI: 10.1007/s11113-025-xxxx-y</p>
+                                <p class="text-sm text-slate-300 font-bold">Yip, P. Fertility Trends in Asian Metropolitan Cities. (2023)</p>
+                                <p class="text-xs text-rose-400 mt-2 font-bold flex items-center gap-1">
+                                    <i data-lucide="unlink" class="w-3.5 h-3.5"></i> 幽灵文献：署名为导师本人，但导师本人也未曾撰写过。
+                                </p>
+                            </div>
+                            <div class="p-4 bg-slate-900 rounded-xl border border-rose-900/20 relative">
+                                <span class="absolute right-4 top-4 text-xs text-rose-500 font-bold">DEAD LINK</span>
+                                <p class="text-xs text-slate-500 font-mono mb-1">Ref [29] DOI: Invalid</p>
+                                <p class="text-sm text-slate-300 font-bold">White, B. Demographics & AI-Powered Forecasts. (2024)</p>
+                                <p class="text-xs text-rose-400 mt-2 font-bold flex items-center gap-1">
+                                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 大模型完全胡编乱造的文献，谷歌学术无此条目。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-6 font-mono">
+                        科技部规范：“不得直接使用未经核实的 AI 生成参考文献”
+                    </p>
+                </div>
+
+                <!-- 右侧：真实案例及严厉下课结果 -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
+                    <div class="p-8 md:p-10 rounded-[3rem] bento-card border-l-[10px] border-rose-600">
+                        <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider mb-6 inline-block">港大副院长下课案 / 2025.10–12</span>
+                        <h3 class="text-3xl font-black text-white mb-6 leading-tight">港大叶兆辉副院长因“文献幻觉”引咎离职</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-6 text-lg">
+                            香港大学 social 科学学院副院长叶兆辉担任通讯作者，其博士生白逸铭作为一作的论文《Forty years of fertility transition in Hong Kong》在发表后遭遇了重锤：
+                        </p>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-8">
+                            海外论坛网友在复现与校对文献时，震惊发现该论文的 <span class="text-rose-400 font-black">61 篇引用文献中，竟有至少 24 篇根本不存在</span>。有的 DOI 号不匹配，有的属于导师叶兆辉署名，却连他自己都闻所未闻。调查表明，由于一作学生直接使用大语言模型整理文献未经验证，导致假文献被堂而皇之写入正式出版物。
+                        </p>
+                        <div class="p-6 bg-red-950/20 border border-red-900/30 rounded-2xl space-y-3">
+                            <h4 class="font-black text-rose-400 text-lg flex items-center gap-2">
+                                <i data-lucide="skull" class="w-5 h-5"></i> 极速追责下场：
+                            </h4>
+                            <p class="text-slate-300 font-bold text-base leading-relaxed">
+                                论文于 2025 年 12 月 15 日正式撤稿。叶兆辉被迫辞去港大社会科学学院副院长、退出研究委员会。一作博士生直接移交纪律程序。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节3：代写残留类 ==================== -->
+    <section id="h3" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-gradient-to-tr from-brand-violet to-brand-indigo text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">03</div>
+                    <div>
+                        <span class="text-brand-violet font-black tracking-widest text-sm uppercase block mb-1">GHOSTWRITING LEAKAGE</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">代写残留类：ChatGPT 投喂没删干净</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容排版 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：代码/正文残留 UI Mockup -->
+                <div class="lg:col-span-6 p-8 rounded-[3rem] bg-slate-900 border border-slate-800 flex flex-col justify-between font-mono">
+                    <div>
+                        <div class="flex items-center gap-2 mb-6 text-slate-500 text-xs">
+                            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                            <span class="ml-2 font-bold">LATEX_EDITOR_PREVIEW.tex</span>
+                        </div>
+                        <div class="p-6 bg-slate-950 rounded-2xl border border-slate-800 text-sm leading-relaxed space-y-4">
+                            <p class="text-slate-500">% Section 1: Introduction</p>
+                            <p class="text-slate-300">
+                                In this work, we analyze the analytical solutions of non-linear fractional equations...
+                            </p>
+                            <div class="p-4 bg-rose-950/20 border border-rose-900/50 rounded-xl relative">
+                                <span class="absolute -top-3 left-4 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black uppercase rounded">Prompt Leak!</span>
+                                <p class="text-rose-400 font-black animate-pulse">
+                                    "Regenerate response"
+                                </p>
+                            </div>
+                            <p class="text-slate-300">
+                                Substituting the boundary conditions back into the fractional derivative...
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-slate-800/80">
+                        <p class="text-xs text-slate-500 font-bold">
+                            直接复制 AI 界面产生的低级失误成了学术不端鉴定的“数字铁证”。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：真实案例与撤稿情况 -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
+                    <div class="p-8 md:p-10 rounded-[3rem] bento-card">
+                        <span class="px-4 py-1.5 rounded-full bg-brand-violet/20 text-brand-violet font-black text-xs tracking-wider mb-6 inline-block">物理/化学方向 / 2023.9 & 2024.3</span>
+                        <h3 class="text-2xl md:text-3xl font-black text-white mb-6 leading-tight">首例 ChatGPT 撤稿案与“废话文学”残留</h3>
+                        <div class="space-y-6 text-slate-400 font-bold">
+                            <p class="text-lg">
+                                <strong>Physica Scripta (2023.9)：</strong> 
+                                全球第一例因未删尽 ChatGPT 界面按钮而撤回的物理论文。作者在一篇解析复数方程的严谨论文中，居然直接将 <span class="text-rose-400 font-black">"Regenerate response"</span>（重新生成回答）这一 AI 界面标签复制到文本中，留下了无法辩驳的学术不端“指纹”。
+                            </p>
+                            <p class="text-lg border-t border-slate-800/80 pt-6">
+                                <strong>Surfaces and Interfaces (2024.3)：</strong> 
+                                在锂电池相关的论文第一段，作者大摇大摆地保留了 ChatGPT 极为标志性的开场白：<span class="text-brand-violet font-black">"Certainly, here is a possible introduction for your topic"</span>（好的，这里是为您课题准备的一个可能的前言），直接在论文审核阶段引发海啸。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节4：署名类 ==================== -->
+    <section id="h4" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-brand-indigo text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">04</div>
+                    <div>
+                        <span class="text-brand-indigo font-black tracking-widest text-sm uppercase block mb-1">AUTHORSHIP ZERO TOLERANCE</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">署名类：全球学术界对AI零容忍</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心政策红线展示 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：全球学术界联合宣言政策框架 -->
+                <div class="lg:col-span-7 p-10 rounded-[3rem] bento-card flex flex-col justify-between border-2 border-brand-indigo/30 relative overflow-hidden">
+                    <div class="absolute -right-12 -bottom-12 opacity-5">
+                        <i data-lucide="scale" class="w-64 h-64 text-brand-indigo"></i>
+                    </div>
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full bg-brand-indigo/10 text-brand-indigo font-black text-xs tracking-wider uppercase mb-6 inline-block">PUBLISHING COMMITTEE MANDATE</span>
+                        <h3 class="text-3xl font-black text-white mb-6">无署名可能：无民事与学术担当主体</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-8">
+                            在多篇 medRxiv 预印本及《自然》跟进报道中，曾有论文尝试将 <strong class="text-white">“ChatGPT”</strong> 列为第十二作者甚至是共同作者。在引发广泛的学术道德伦理争议后，所有涉事杂志全部撤稿或紧急更正剔除。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                        <div class="text-center">
+                            <span class="text-brand-indigo font-black text-lg block">COPE</span>
+                            <span class="text-slate-500 text-xs">明确禁止</span>
+                        </div>
+                        <div class="text-center border-l border-slate-800">
+                            <span class="text-brand-indigo font-black text-lg block">Nature</span>
+                            <span class="text-slate-500 text-xs">零容忍</span>
+                        </div>
+                        <div class="text-center border-l border-slate-800">
+                            <span class="text-brand-indigo font-black text-lg block">Science</span>
+                            <span class="text-slate-500 text-xs">红线封杀</span>
+                        </div>
+                        <div class="text-center border-l border-slate-800">
+                            <span class="text-brand-indigo font-black text-lg block">Cell</span>
+                            <span class="text-slate-500 text-xs">严格剔除</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：拒绝盖章 Mockup -->
+                <div class="lg:col-span-5 p-8 rounded-[3rem] bg-slate-950 border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+                    <div class="p-6 border-4 border-dashed border-rose-600/40 rounded-2xl text-center rotate-3 relative">
+                        <span class="text-rose-500 font-black text-4xl uppercase tracking-widest block">REJECTED</span>
+                        <span class="text-slate-400 text-xs font-mono block mt-2">AI NOT ELIGIBLE FOR CO-AUTHORSHIP</span>
+                    </div>
+                    <div class="mt-8 space-y-4">
+                        <h4 class="text-xl font-black text-white">权威机构判语：</h4>
+                        <p class="text-slate-400 font-bold leading-relaxed text-sm">
+                            共同作者必须对文章的科学性做出创造性贡献并具备独立承担学术和法律责任的实体民事地位。AI 无法为自己的话语担责，没有任何妥协和谈判的空间。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节5：审稿类 ==================== -->
+    <section id="h5" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-gradient-to-tr from-amber-600 to-rose-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">05</div>
+                    <div>
+                        <span class="text-amber-400 font-black tracking-widest text-sm uppercase block mb-1">AI PEER-REVIEW BAN</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">审稿类：国内 2026 年起密集爆雷封杀</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容排版 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：3D翻转卡片核心警告 -->
+                <div class="lg:col-span-4 flex flex-col justify-between">
+                    <div class="flip-card w-full">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" style="background: linear-gradient(135deg, #271c1f 0%, #0f172a 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-rose tracking-widest uppercase">REVIEW SECURITY RISK</span>
+                                    <i data-lucide="shield-alert" class="w-8 h-8 text-brand-rose"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-white mb-6 leading-tight">评审人为何极易通过 AI 涉嫌严重泄密？</h3>
+                                    <p class="text-slate-400 font-bold">悬停翻转，洞察学术意见外包风险 ➔</p>
+                                </div>
+                                <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-brand-rose h-full w-4/5"></div>
+                                </div>
+                            </div>
+                            <div class="flip-card-back" style="background: linear-gradient(135deg, #0f172a 0%, #450a0a 100%);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-brand-amber tracking-widest uppercase">DOUBLE DISASTER</span>
+                                    <i data-lucide="alert-triangle" class="w-8 h-8 text-brand-amber"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-xl font-black text-white mb-2">未发表数据的“外包悲剧”</h4>
+                                    <p class="text-slate-300 font-bold text-xs leading-relaxed">
+                                        把待审手稿、包含关键未公开图表数据丢进公网大模型，本质上就是把别人的心血喂给了第三方，面临极严重的知识产权泄密与严重的质量垮塌风险。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">移开鼠标返回原状态</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：期刊密集声明清单 -->
+                <div class="lg:col-span-8 p-8 md:p-10 rounded-[3rem] bento-card flex flex-col justify-between">
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-400 font-black text-xs tracking-wider mb-6 inline-block">2026年 2月–4月 期刊密集通报声明</span>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <h4 class="font-black text-white text-lg mb-2 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> 《中国药房》 2.24
+                                </h4>
+                                <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                                    国家卫健委主管。严禁将稿件核心图表数据上传 AI，规避重大商业与知识产权泄密风险。
+                                </p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <h4 class="font-black text-white text-lg mb-2 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 《体育世界》 3.3
+                                </h4>
+                                <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                                    通报指出部分审稿人意见高度雷同空泛，疑似通过 AI 代笔，强制要求违规者退审或点名处理。
+                                </p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <h4 class="font-black text-white text-lg mb-2 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-brand-indigo"></span> 《智慧农业》 3.6
+                                </h4>
+                                <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                                    引入 AI 检测系统筛查，一经查实直接永久取消涉事人员在库评审资质。
+                                </p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <h4 class="font-black text-white text-lg mb-2 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-brand-emerald"></span> 《中国畜牧杂志》 3.20
+                                </h4>
+                                <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                                    同期重申严密打击意见“模版化、空洞化”。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节6：涉密类 ==================== -->
+    <section id="h6" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-rose-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">06</div>
+                    <div>
+                        <span class="text-rose-400 font-black tracking-widest text-sm uppercase block mb-1">CONFIDENTIAL DATA LEAK</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">涉密类：央广网点名的“小李案”</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 保密盾牌视觉排版 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：机密警告 -->
+                <div class="lg:col-span-5 p-8 rounded-[3rem] bg-gradient-to-tr from-slate-950 to-rose-950/20 border-2 border-rose-500/30 flex flex-col justify-between text-center min-h-[350px]">
+                    <div class="mx-auto w-24 h-24 rounded-full bg-rose-950/50 border-2 border-rose-500 flex items-center justify-center animate-pulse">
+                        <i data-lucide="shield-alert" class="w-12 h-12 text-rose-500"></i>
+                    </div>
+                    <div>
+                        <span class="px-3 py-1 bg-rose-950/60 text-rose-500 border border-rose-900/50 rounded-lg text-xs font-mono font-bold block mb-4">CONFIDENTIAL SECURITY BREACH</span>
+                        <h3 class="text-2xl font-black text-white">核心保密底线：不可上传敏感数据</h3>
+                    </div>
+                    <p class="text-xs text-slate-500 font-mono">
+                        公网大模型本质为无国界分布式训练数据搜集器
+                    </p>
+                </div>
+
+                <!-- 右侧：央广网真实通报 -->
+                <div class="lg:col-span-7 p-8 md:p-10 rounded-[3rem] bento-card flex flex-col justify-between">
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider mb-6 inline-block">某科研机构 / 2025.7 央广网通报</span>
+                        <h3 class="text-3xl font-black text-white mb-6">研究员小李私自上传核心涉密数据外泄事件</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-6">
+                            某科研机构的研究人员小李，在撰写极其关键的项目报告及实验报告时，图一时的省事与快捷，私自将含有该机构<span class="text-rose-400 font-black underline underline-offset-4">核心关键数据以及重要实验未公开成果</span>直接复制上传至某款公网 AI 大语言模型。
+                        </p>
+                        <p class="text-slate-400 font-bold leading-relaxed mb-8">
+                            因为该模型的云端交互库具备自我回传与学习机制，导致上传的机密与科研涉密成果在公网上发生实质外泄，最终事件被通报处罚并移送法办。
+                        </p>
+                    </div>
+                    <div class="p-6 bg-red-950/20 border border-red-900/30 rounded-2xl flex gap-4 items-center">
+                        <i data-lucide="info" class="text-rose-500 shrink-0 w-8 h-8"></i>
+                        <p class="text-rose-400 font-black text-sm">
+                            社科院 2026 规范严厉规定：严禁向 AI 泄露、上传任何包含国家重大工程、科研涉密以及单位内核心机密数据，严重者可追究保密法律责任。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节7：避坑 SOP ==================== -->
+    <section id="h7" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-20">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-brand-emerald text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">07</div>
+                    <div>
+                        <span class="text-brand-emerald font-black tracking-widest text-sm uppercase block mb-1">STANDARD OPERATING PROCEDURE</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">避坑 SOP：学者自我防御白皮书</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 鱼骨流程图结构 -->
+            <div class="fishbone-container">
+                <div class="fishbone-spine"></div>
+
+                <!-- 步骤 1 -->
+                <div class="fishbone-node-left relative">
+                    <div class="inline-block p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 text-left w-full lg:max-w-xl">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="w-10 h-10 bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded-xl flex items-center justify-center font-black">1</span>
+                            <h3 class="text-xl font-black text-white">AI配图彻底降级：除非方法学，否则绝不用</h3>
+                        </div>
+                        <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                            机制、病理示意图等一律通过 BioRender、Illustrator 手动绘制，若确需使用 AI，必须得到期刊编辑书面正式准许，并确保绝对符合人体及动植物解剖学真相。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 步骤 2 -->
+                <div class="fishbone-node-right relative">
+                    <div class="inline-block p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 text-left w-full lg:max-w-xl">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="w-10 h-10 bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded-xl flex items-center justify-center font-black">2</span>
+                            <h3 class="text-xl font-black text-white">引文献“笨人法则”：每一条必手动打开</h3>
+                        </div>
+                        <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                            哪怕大模型生成的 DOI 号再真实，也必须手动复制并去 PubMed、Google Scholar、或者知网逐条检索核实直至能真实下载点开，切忌在最后的文献润色环节将“虚幻引文”塞进终稿。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 步骤 3 -->
+                <div class="fishbone-node-left relative">
+                    <div class="inline-block p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 text-left w-full lg:max-w-xl">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="w-10 h-10 bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded-xl flex items-center justify-center font-black">3</span>
+                            <h3 class="text-xl font-black text-white">透明彻底披露：工具名、提示词一并交代</h3>
+                        </div>
+                        <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                            只要有大语言模型协助进行文献大纲整理、文字翻译润色等工作，必须在文章的“致谢”或“方法”区域，大方公开模型型号、具体版本、具体应用章节和关键提问策略思路。隐瞒不报等于主观造假。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 步骤 4 -->
+                <div class="fishbone-node-right relative">
+                    <div class="inline-block p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 text-left w-full lg:max-w-xl">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="w-10 h-10 bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/40 rounded-xl flex items-center justify-center font-black">4</span>
+                            <h3 class="text-xl font-black text-white">物理沙箱边界：敏感数据绝对不进公网 AI</h3>
+                        </div>
+                        <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                            未经发表的研究草稿、申报书大纲、待审手稿、商业或技术专利。宁可使用单位局域网内单机运行的本地开源模型，绝不把涉密与前沿保密数据喂给公网 AI，堵死一切潜在的泄露链。
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer class="py-16 bg-slate-950 border-t border-slate-900 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-rose-950/10 to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-slate-400 text-sm font-black tracking-widest uppercase">
+                © 2026 AI赋能科研团队 | 学术不端案例警示录
+            </p>
+            <div class="flex gap-6">
+                <a href="#h0" class="text-slate-500 hover:text-rose-400 font-black text-sm transition-all uppercase tracking-widest">返回课程顶部 ↑</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        
+        /**
+         * 动态图片加载备份管理函数
+         * 优先读取本地根目录: image/ScreenShot_2026-07-18_014908_807.png
+         * 本地读取不成功加载网络图片: https://i.imgs.ovh/2026/07/18/6c00bc209538e308d79da1ad6c950558.png
+         * 若全失败，退回默认的学术荒诞大鼠图 SVG 视觉 Mockup
+         */
+        function handleImageLoadFailure(imgElement) {
+            const currentStage = imgElement.getAttribute('data-retry-stage');
+            
+            if (currentStage === 'local') {
+                // 本地加载失败，升级为尝试网络图片
+                imgElement.setAttribute('data-retry-stage', 'web');
+                imgElement.src = 'https://i.imgs.ovh/2026/07/18/6c00bc209538e308d79da1ad6c950558.png';
+            } else if (currentStage === 'web') {
+                // 网络加载也失败，隐藏图像框并展示内置后备 SVG
+                imgElement.classList.add('hidden');
+                
+                const fallbackSvg = document.getElementById('fallback-svg-wrapper');
+                if (fallbackSvg) {
+                    fallbackSvg.classList.remove('hidden');
+                }
+            }
+        }
+
+        // 初始化 Lucide 图标
+        lucide.createIcons();
+
+        // 视图进入交互（Reveal）
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // 导航联动高亮
+        const dots = document.querySelectorAll('.progress-dot');
+        const sections = Array.from(dots).map(dot => document.getElementById(dot.dataset.target));
+
+        function updateNavActiveState() {
+            let currentActiveSectionId = '';
+            const scrollOffset = window.innerHeight / 2.2;
+            const currentScrollTop = window.scrollY + scrollOffset;
+
+            sections.forEach(section => {
+                if (section && currentScrollTop >= section.offsetTop) {
+                    currentActiveSectionId = section.id;
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.target === currentActiveSectionId);
+            });
+        }
+
+        window.addEventListener('scroll', updateNavActiveState);
+        window.addEventListener('resize', updateNavActiveState);
+
+        // 锚点平滑滚动
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetElement = document.getElementById(dot.dataset.target);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 首屏自动激活
+        window.addEventListener('load', () => {
+            updateNavActiveState();
+            document.querySelector('#h0').classList.add('active');
+        });
+    </script>
+</body>
+</html>

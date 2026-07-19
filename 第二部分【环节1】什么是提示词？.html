@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理解 AI 的核心架构：提示词、Skills 与 循环工程</title>
+    <!-- 加载 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 加载 Lucide 核心图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 Noto Sans SC 与 Inter 顶级无衬线中英文字体库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            indigo: '#4f46e5',
+                            emerald: '#059669',
+                            rose: '#e11d48',
+                            amber: '#f59e0b',
+                            slate: '#0b0f19',
+                            darkCard: '#131926',
+                            purple: '#7c3aed'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #060913;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        /* 隐藏原生滚动条，确保高质感无缝界面 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060913;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
+        }
+
+        /* 极致的侧边毛玻璃进度导航 */
+        .progress-nav {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.4);
+            backdrop-filter: blur(24px);
+            padding: 1.8rem 0.8rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #334155;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            transform: scale(2);
+            background-color: #4f46e5 !important;
+            box-shadow: 0 0 15px #4f46e5;
+        }
+
+        .progress-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            background: rgba(11, 15, 25, 0.95);
+            padding: 0.4rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-50%) translateX(10px);
+        }
+
+        .progress-dot:hover::after { 
+            opacity: 1; 
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* 3D 翻转卡片极致细节 */
+        .flip-card { 
+            perspective: 1200px; 
+            height: 380px; 
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner { 
+            transform: rotateY(180deg); 
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(11, 15, 25, 0.9) 100%);
+        }
+        .flip-card-back { 
+            background: linear-gradient(135deg, rgba(11, 15, 25, 0.9) 0%, rgba(79, 70, 229, 0.25) 100%);
+            transform: rotateY(180deg); 
+        }
+
+        /* 视口渐入动效 */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+        .section-py { 
+            padding-top: 8rem; 
+            padding-bottom: 8rem; 
+        }
+
+        /* Bento 渐变发光卡片样式 */
+        .bento-card {
+            background: linear-gradient(135deg, rgba(19, 25, 38, 0.4) 0%, rgba(6, 9, 19, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+        }
+
+        /* SVG 循环流动线动画效果 */
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -40;
+            }
+        }
+        .flow-dash {
+            stroke-dasharray: 8, 4;
+            animation: dash 2s linear infinite;
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-600 selection:text-white">
+
+    <!-- 侧边极简毛玻璃进度导航 -->
+    <nav class="progress-nav hidden lg:flex">
+        <div class="progress-dot active" data-target="h0" data-label="00 课程首页" style="background-color: #4f46e5;"></div>
+        <div class="progress-dot" data-target="h1" data-label="01 提示词 (Prompt)" style="background-color: #4f46e5;"></div>
+        <div class="progress-dot" data-target="h2" data-label="02 AI 技能 (Skills)" style="background-color: #059669;"></div>
+        <div class="progress-dot" data-target="h3" data-label="03 循环工程 (Loop)" style="background-color: #e11d48;"></div>
+        <div class="progress-dot" data-target="h4" data-label="04 三者层级依赖" style="background-color: #7c3aed;"></div>
+        <div class="progress-dot" data-target="h5" data-label="05 通俗隐喻" style="background-color: #f59e0b;"></div>
+    </nav>
+
+    <!-- ==================== 环节0：首页大图 ==================== -->
+    <section id="h0" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-brand-slate via-slate-950 to-brand-slate px-6">
+        <!-- 背景炫酷彩色光晕 -->
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[130px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-purple-950/15 rounded-full blur-[150px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10 reveal">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-indigo-400 mb-8 font-black tracking-widest text-sm uppercase">
+                <i data-lucide="cpu" class="w-4 h-4 text-indigo-500 animate-pulse"></i> NEXT-GEN AI SYSTEM PARADIGM
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black mb-12 tracking-tighter leading-none">
+                什么是提示词？<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-emerald-400 to-amber-300">Prompt、Skills 与 Loop Engineering 的关系</span>
+            </h1>
+            <p class="text-xl md:text-2xl font-bold text-slate-400 max-w-4xl mx-auto leading-relaxed mb-16">
+                从简单的“人机对话”，到高内聚可复用的“模块技能”，最终演进到“无人值守、自治闭环运行的算法系统”。在这里，解构 AI 工程化落地的黄金层级链路。
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#h1" class="px-10 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-lg rounded-2xl hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-indigo-500/20 inline-flex items-center gap-3">
+                    进入解构旅程 <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节1：提示词（Prompt） ==================== -->
+    <section id="h1" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-indigo-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">01</div>
+                    <div>
+                        <span class="text-indigo-400 font-black tracking-widest text-sm uppercase block mb-1">PROMPT ENGINEERING</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">提示词：人机交互的最小输入单元</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 左右 1:1 分栏布局 -->
+            <div class="grid lg:grid-cols-12 gap-12 items-stretch">
+                <!-- 左侧：拟真终端编辑器 -->
+                <div class="lg:col-span-6 p-8 rounded-[3.5rem] bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between font-mono relative overflow-hidden min-h-[420px]">
+                    <div>
+                        <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3.5 h-3.5 rounded-full bg-rose-500"></span>
+                                <span class="w-3.5 h-3.5 rounded-full bg-amber-500"></span>
+                                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
+                                <span class="ml-2 text-xs text-slate-500 font-bold">SYSTEM_PROMPT_MOCK.json</span>
+                            </div>
+                            <span class="text-xs text-indigo-400 font-black uppercase">Few-Shot Active</span>
+                        </div>
+                        <div class="p-6 bg-slate-950 rounded-3xl border border-slate-800 leading-relaxed text-sm">
+                            <p class="text-indigo-500 mb-2">// 结构化提示词示例</p>
+                            <p class="text-slate-200">
+                                <span class="text-emerald-400">"Role":</span> "资深产品经理",<br>
+                                <span class="text-emerald-400">"Task":</span> "基于下面需求撰写产品需求文档（PRD）",<br>
+                                <span class="text-emerald-400">"Format":</span> "拆分为4大核心模块，采用 Markdown 表格形式渲染",<br>
+                                <span class="text-emerald-400">"Constraint":</span> "精简凝练，绝对杜绝产生冗余废话描述"<br>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-5 bg-indigo-950/20 border border-indigo-900/30 rounded-2xl">
+                        <p class="text-indigo-400 font-bold text-xs">
+                            <span class="font-black text-white">运行场景举例：</span>“你是资深产品经理，基于下面需求写 PRD，分 4 大模块，用 markdown 表格输出，不要冗余描述。”
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：结构特征精要卡片 -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
+                    <div class="p-8 md:p-10 rounded-[3rem] bento-card h-full flex flex-col justify-between border-l-8 border-indigo-600">
+                        <div>
+                            <span class="px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-black text-xs tracking-wider mb-6 inline-block">DEFINITION & CORE ROLE</span>
+                            <h3 class="text-3xl font-black text-white mb-6">指令、文本与约束的底层聚合</h3>
+                            <p class="text-slate-400 font-bold leading-relaxed text-lg mb-6">
+                                提示词（Prompt）是人类向大语言模型（LLM）传达文本指令、上下文环境、特定问题或输出约束的<strong class="text-indigo-400">最小输入单元</strong>。
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i>
+                                        <span class="text-slate-200 font-black text-sm">单次调用指令</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-bold">解决多轮/单轮交互中“一句话如何让AI输出达标”的优化。</span>
+                                </div>
+                                <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i data-lucide="toy-brick" class="w-4 h-4 text-indigo-400"></i>
+                                        <span class="text-slate-200 font-black text-sm">构成组件化</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-bold">常包含：角色、任务指令、Few-shot示例、思维链 (CoT)。</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节2：Skills（AI 技能） ==================== -->
+    <section id="h2" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-emerald-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">02</div>
+                    <div>
+                        <span class="text-emerald-400 font-black tracking-widest text-sm uppercase block mb-1">MODULAR AI SKILL</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">Skills：标准化、可复用的完整任务包</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容格栅 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：3D 翻转对比卡片 -->
+                <div class="lg:col-span-5 flex flex-col justify-between">
+                    <div class="flip-card w-full">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" style="background: linear-gradient(135deg, #111e25 0%, #060913 100%); border-color: rgba(5, 150, 105, 0.2);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-indigo-400 tracking-widest uppercase">TEMPORARY INSCRIPTION</span>
+                                    <i data-lucide="message-square" class="w-8 h-8 text-indigo-400"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-3xl font-black text-white mb-4">提示词 = 临时口头吩咐</h4>
+                                    <p class="text-slate-400 font-bold text-sm leading-relaxed">
+                                        基于单次对话，随手输入，单次见效。对话结束即刻消失，难以沉淀、无法便捷在系统间复用和组合。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">悬停翻转，查看标准化封装 ➔</span>
+                            </div>
+                            <div class="flip-card-back" style="background: linear-gradient(135deg, #060913 0%, #034f37 100%); border-color: rgba(5, 150, 105, 0.4);">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-black text-emerald-400 tracking-widest uppercase">STANDARDIZED TEMPLATE</span>
+                                    <i data-lucide="book-open" class="w-8 h-8 text-emerald-400"></i>
+                                </div>
+                                <div class="my-auto">
+                                    <h4 class="text-3xl font-black text-white mb-4">Skill = 固化流程操作手册</h4>
+                                    <p class="text-slate-200 font-bold text-sm leading-relaxed">
+                                        封装了特定提示词、工具调用规则、参数输入规范与异常处理。随时热插拔，可供全局自动化系统直接按需调用。
+                                    </p>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold">移开鼠标返回原状态 ➔</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：Skill 组成拆解卡片 -->
+                <div class="lg:col-span-7 p-10 rounded-[3.5rem] bento-card flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-black text-xs tracking-wider uppercase mb-6 inline-block">SYSTEM COMPONENT PACKAGE</span>
+                        <h3 class="text-3xl font-black text-white mb-6">AI Skill 的标准化内部装配体系</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-8">
+                            Skill 是比 Prompt 更高维度的抽象单元，相当于为大语言模型预装的一套标准化业务操作流程（如“合同审核 Skill”、“周报自动生成 Skill”）。
+                        </p>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-emerald-400 font-black text-xs uppercase tracking-wider block mb-2">01 固定提示词链条</span>
+                                <p class="text-xs text-slate-500 leading-relaxed font-bold">Skill 内部包含了完成特定任务所需的高质量多阶提示词和参数注入点。</p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-emerald-400 font-black text-xs uppercase tracking-wider block mb-2">02 工具调用规则 (Tools)</span>
+                                <p class="text-xs text-slate-500 leading-relaxed font-bold">明确配置大模型应在何时调度网络检索、计算器或数据库检索等外部接口。</p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-emerald-400 font-black text-xs uppercase tracking-wider block mb-2">03 无需微调模型参数</span>
+                                <p class="text-xs text-slate-500 leading-relaxed font-bold">无需重训模型，完全依靠上下文控制实现轻量化热插拔和可复用机制。</p>
+                            </div>
+                            <div class="p-5 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-emerald-400 font-black text-xs uppercase tracking-wider block mb-2">04 规范的入参/出参</span>
+                                <p class="text-xs text-slate-500 leading-relaxed font-bold">设计严密的 JSON 格式约束，让输入输出满足自动化开发集成对接的硬性门槛。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节3：Loop Engineering（循环工程） ==================== -->
+    <section id="h3" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-rose-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">03</div>
+                    <div>
+                        <span class="text-rose-400 font-black tracking-widest text-sm uppercase block mb-1">AUTONOMOUS LOOP ENGINEERING</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">循环工程：自主迭代的自治闭环系统</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主内容排版 -->
+            <div class="grid lg:grid-cols-12 gap-10 items-stretch">
+                <!-- 左侧：循环流程可视化示意图 -->
+                <div class="lg:col-span-6 p-8 rounded-[3.5rem] bg-slate-900/40 border border-slate-800 flex flex-col justify-center items-center relative min-h-[420px]">
+                    <span class="absolute top-4 left-4 text-xs font-mono text-slate-500 font-bold">LOOP_CYBERNETIC_MODEL.svg</span>
+                    
+                    <!-- SVG 闭环控制系统拓扑图 -->
+                    <svg class="w-full max-w-[420px]" viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 连接线 -->
+                        <path d="M50 120 H120 M180 120 H250 M310 120" stroke="#475569" stroke-width="2"/>
+                        <!-- 闭环回路反馈线 -->
+                        <path d="M280 145 V190 H150 V145" stroke="#ef4444" stroke-width="2" stroke-linecap="round" class="flow-dash"/>
+                        <path d="M145 140 L150 145 L155 140" fill="#ef4444"/>
+                        
+                        <!-- 节点1：目标 -->
+                        <rect x="10" y="95" width="80" height="50" rx="12" fill="#1e293b" stroke="#4f46e5" stroke-width="2"/>
+                        <text x="50" y="125" fill="#f8fafc" font-size="11" font-weight="bold" text-anchor="middle">1. 设定目标</text>
+                        
+                        <!-- 节点2：执行/Skills -->
+                        <rect x="110" y="95" width="100" height="50" rx="12" fill="#112521" stroke="#059669" stroke-width="2"/>
+                        <text x="160" y="125" fill="#059669" font-size="11" font-weight="bold" text-anchor="middle">2. 调度Skill/AI</text>
+                        
+                        <!-- 节点3：校验 -->
+                        <rect x="230" y="95" width="100" height="50" rx="12" fill="#251216" stroke="#ef4444" stroke-width="2"/>
+                        <text x="280" y="125" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">3. 结果校验</text>
+                        
+                        <!-- 反馈重试标签 -->
+                        <text x="215" y="180" fill="#f43f5e" font-size="10" font-family="monospace">不达标，触发重试 (Loop)</text>
+                    </svg>
+
+                    <div class="mt-6 px-6 py-3 rounded-2xl bg-rose-950/20 border border-rose-900/30 text-center">
+                        <p class="text-rose-400 font-bold text-xs leading-relaxed">
+                            自治反馈架构：目标 → 执行 → 校验 → 循环 → 退出。完全脱离人类反复手写指令的物理局限。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 右侧：循环工程定义与价值 -->
+                <div class="lg:col-span-6 flex flex-col justify-between space-y-6">
+                    <div class="p-8 md:p-10 rounded-[3rem] bento-card border-r-8 border-rose-600">
+                        <span class="px-4 py-1.5 rounded-full bg-rose-500/10 text-rose-400 font-black text-xs tracking-wider uppercase mb-6 inline-block">CYBERNETICS & AUTONOMY</span>
+                        <h3 class="text-3xl font-black text-white mb-6">无人值守的自动化运行系统设计</h3>
+                        <p class="text-slate-400 font-bold leading-relaxed text-lg mb-6">
+                            循环工程（Loop Engineering）设计的是一个<strong>高度自治、自我纠错、自我迭代的自治闭环机制</strong>，它的终极宿命是彻底代替人类手工的一轮轮发问与校对。
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-rose-400 font-black text-sm block mb-1">自动自治化交互</span>
+                                <p class="text-xs text-slate-500 font-bold">系统接收全局总目标后，自动执行多次内部交互循环，自动校验，直到输出合格的成果，自主达成退出逻辑。</p>
+                            </div>
+                            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="text-rose-400 font-black text-sm block mb-1">精密的退出条件 (Stop Criteria)</span>
+                                <p class="text-xs text-slate-500 font-bold">配备异常容错，当出现无限循环时能优雅重试、终止并向人类报送健康指标日志。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 环节4：三者层级与依赖关系 ==================== -->
+    <section id="h4" class="min-h-screen flex items-center section-py px-6 bg-slate-900">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-purple-600 text-white rounded-3xl font-black text-3xl shadow-lg shrink-0">04</div>
+                    <div>
+                        <span class="text-purple-400 font-black tracking-widest text-sm uppercase block mb-1">SYSTEM DEPENDENCY LAYER</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">层级递进：Prompt → Skills → Loop Engineering</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento 12 列层级大图布局 -->
+            <div class="grid md:grid-cols-12 gap-8 items-stretch">
+                <!-- 第一层：底层（Prompt）占 4 列 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between border-b-8 border-indigo-600">
+                    <div>
+                        <span class="text-xs font-mono text-indigo-400 font-black block mb-4 uppercase">LAYER 01 - ATOM UNIT</span>
+                        <h4 class="text-2xl font-black text-white mb-4">提示词是底层基石</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed font-bold">
+                            所有的 Skill 内部均需要由多条精心雕琢的提示词承载运行。Loop 的每一次原子轮转执行，其本质也是向大语言模型终端输送 Prompt 载荷，这是模型唯一能听懂的思考原料。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-indigo-400 font-black text-xs mt-6">
+                        <i data-lucide="info" class="w-4 h-4"></i> 没有提示词，就没有思维引擎
+                    </div>
+                </div>
+
+                <!-- 第二层：中层（Skills）占 4 列 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between border-b-8 border-emerald-600">
+                    <div>
+                        <span class="text-xs font-mono text-emerald-400 font-black block mb-4 uppercase">LAYER 02 - CONTAINER UNIT</span>
+                        <h4 class="text-2xl font-black text-white mb-4">Skill 提供可调度能力</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed font-bold">
+                            Skill 是对零散提示词进行的高度内聚封装。在上层自动化逻辑（Loop）运行时，系统不需要笨拙地向模型发出一大组杂乱提示词，而是像乐高积木一样，快速调度一个个开箱即用的标准 Skill。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-emerald-400 font-black text-xs mt-6">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> 实现提示词标准化工程复用
+                    </div>
+                </div>
+
+                <!-- 第三层：高层（Loop）占 4 列 -->
+                <div class="md:col-span-4 p-8 rounded-[2.5rem] bento-card flex flex-col justify-between border-b-8 border-rose-600">
+                    <div>
+                        <span class="text-xs font-mono text-rose-400 font-black block mb-4 uppercase">LAYER 03 - PILOT UNIT</span>
+                        <h4 class="text-2xl font-black text-white mb-4">Loop 是顶层上级调度系统</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed font-bold">
+                            传统提示词靠人手工循环、靠人脑肉眼校验。而 Loop 则是系统级的闭环控制器。人只用在顶层下达一次宏大任务指令，Loop 负责串联多个 Skill，自主进行多重轮转运行。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 text-rose-400 font-black text-xs mt-6">
+                        <i data-lucide="zap" class="w-4 h-4"></i> 实现 AI 深度自治运行
+                    </div>
+                </div>
+
+                <!-- 全网协同流转机制（12列巨幅板块） -->
+                <div class="md:col-span-12 p-10 rounded-[3rem] bento-card border border-purple-500/30 flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <span class="px-4 py-1.5 rounded-full bg-purple-500/10 text-purple-400 font-black text-xs tracking-wider uppercase mb-6 inline-block">COLLABORATION WORKFLOW</span>
+                        <h3 class="text-3xl font-black text-white mb-6">三者全链路闭环协调运行范式</h3>
+                        
+                        <div class="grid md:grid-cols-3 gap-8 mt-6">
+                            <div class="p-6 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-black mb-4">1</span>
+                                <h5 class="font-black text-white text-lg mb-2">开发者预先封装设计</h5>
+                                <p class="text-xs text-slate-500 leading-relaxed">设计完备的<strong>结构化提示词（Prompts）</strong>，把它们整体打包装入标准化工具中，组合为可插拔调用的 <strong>Skills</strong>（例如“文档格式摘要 Skill”、“系统联试测试 Skill”）。</p>
+                            </div>
+                            <div class="p-6 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="bg-emerald-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-black mb-4">2</span>
+                                <h5 class="font-black text-white text-lg mb-2">引入 Loop Engineering 控制系统</h5>
+                                <p class="text-xs text-slate-500 leading-relaxed">定义顶层目标、重试上限、退出容灾条件和严密的机器自动检查规则。该系统能够自主轮转流转，完全脱离人工干预。</p>
+                            </div>
+                            <div class="p-6 bg-slate-950 rounded-2xl border border-slate-800">
+                                <span class="bg-rose-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-black mb-4">3</span>
+                                <h5 class="font-black text-white text-lg mb-2">闭环系统无休运行</h5>
+                                <p class="text-xs text-slate-500 leading-relaxed">系统自动运行，调度 Skill 1 并自动通过模型提问，获取回复后如遇格式残损，系统自动组织错误日志通过 Prompt 指令再次发问并校验，直到完美后流转到下一阶段。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 环节5：通俗类比 ==================== -->
+    <section id="h5" class="min-h-screen flex items-center section-py px-6 border-t border-slate-900 bg-slate-950">
+        <div class="max-w-7xl mx-auto w-full reveal">
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+                <div class="flex items-start gap-6">
+                    <div class="p-6 bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 rounded-3xl font-black text-3xl shadow-lg shrink-0">05</div>
+                    <div>
+                        <span class="text-amber-400 font-black tracking-widest text-sm uppercase block mb-1">INTUITION & ANALOGY</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white">通俗类比：做菜步骤、菜谱与全自动烹饪系统</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 类比三维卡片平铺 -->
+            <div class="grid lg:grid-cols-3 gap-8 items-stretch mb-12">
+                <div class="p-8 bg-slate-900 rounded-[3rem] border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="p-4 bg-indigo-950/20 text-indigo-400 rounded-2xl border border-indigo-900/30 inline-flex items-center gap-2 mb-6 font-black text-sm uppercase">
+                            <i data-lucide="chef-hat" class="w-4 h-4"></i> Atomic Action
+                        </div>
+                        <h4 class="text-2xl font-black text-white mb-4">提示词 = 做菜单个步骤</h4>
+                        <p class="text-slate-400 font-bold leading-relaxed text-sm">
+                            具体的指令细节：“切好肉丝备用、开大火爆香葱蒜、撒两勺盐调味”。每一条都是具体的、孤立的动作指令，要求精准，不可有歧义。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-8 bg-slate-900 rounded-[3rem] border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="p-4 bg-emerald-950/20 text-emerald-400 rounded-2xl border border-emerald-900/30 inline-flex items-center gap-2 mb-6 font-black text-sm uppercase">
+                            <i data-lucide="book-open-text" class="w-4 h-4"></i> Standard Recipe
+                        </div>
+                        <h4 class="text-2xl font-black text-white mb-4">Skills = 鱼香肉丝菜谱</h4>
+                        <p class="text-slate-400 font-bold leading-relaxed text-sm">
+                            一个标准化、固化成册的操作手册：将切肉、爆炒、勾芡、出锅等繁琐的爆炒提示词彻底打包、标注火候。下厨时只要打开这本固定菜谱即可精准还原出鱼香肉丝的口味。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-8 bg-slate-900 rounded-[3rem] border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="p-4 bg-rose-950/20 text-rose-400 rounded-2xl border border-rose-900/30 inline-flex items-center gap-2 mb-6 font-black text-sm uppercase">
+                            <i data-lucide="combine" class="w-4 h-4"></i> Autonomous Machine
+                        </div>
+                        <h4 class="text-2xl font-black text-white mb-4">Loop = 全自动炒菜机器人</h4>
+                        <p class="text-slate-400 font-bold leading-relaxed text-sm">
+                            一整套全智能机械化厨房：倒入原材料后，自动读取对应菜谱（Skill），自主计算翻炒时间。烹饪完毕自动尝味（机器校验），发现味道淡了自动回锅重炒，直到完美的食物装盘才会优雅关机。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 金句高光大底总结框 -->
+            <div class="p-10 md:p-12 bg-gradient-to-r from-indigo-950/30 via-slate-900 to-emerald-950/20 rounded-[3.5rem] border border-indigo-900/40 mt-12 text-center">
+                <h4 class="text-xl font-mono text-indigo-400 font-black mb-6 uppercase tracking-wider">ONE-SENTENCE GOLDEN CONCLUSION</h4>
+                <p class="text-2xl md:text-3xl font-black text-white leading-relaxed max-w-5xl mx-auto italic">
+                    “提示词是最小指令原料，Skills 是封装好的标准化能力包，Loop Engineering 是调度原料与能力、实现 AI 自主多轮迭代的顶层系统框架。三者层层嵌套、缺一不可。”
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer class="py-16 bg-slate-950 border-t border-slate-900 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/10 to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-slate-500 text-sm font-black tracking-widest uppercase">
+                © 2026 AI赋能科研团队 | 提示词、Skills与Loop Engineering的协同关系
+            </p>
+            <div class="flex gap-6">
+                <a href="#h0" class="text-slate-400 hover:text-indigo-400 font-black text-sm transition-all uppercase tracking-widest">返回课程顶部 ↑</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化 Lucide 高清矢量图标库
+        lucide.createIcons();
+
+        // 视口渐入（Reveal）观察者逻辑
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // 侧边导航栏锚点随滚动联动变色机制
+        const dots = document.querySelectorAll('.progress-dot');
+        const sections = Array.from(dots).map(dot => document.getElementById(dot.dataset.target));
+
+        function updateNavActiveState() {
+            let currentActiveSectionId = '';
+            const scrollOffset = window.innerHeight / 2.2;
+            const currentScrollTop = window.scrollY + scrollOffset;
+
+            sections.forEach(section => {
+                if (section && currentScrollTop >= section.offsetTop) {
+                    currentActiveSectionId = section.id;
+                }
+            });
+
+            dots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.target === currentActiveSectionId);
+            });
+        }
+
+        window.addEventListener('scroll', updateNavActiveState);
+        window.addEventListener('resize', updateNavActiveState);
+
+        // 点击导航点实现平滑弹性滚动
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetElement = document.getElementById(dot.dataset.target);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 首屏数据初始化装填
+        window.addEventListener('load', () => {
+            updateNavActiveState();
+            document.querySelector('#h0').classList.add('active');
+        });
+    </script>
+</body>
+</html>
